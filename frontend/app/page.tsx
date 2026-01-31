@@ -1,9 +1,7 @@
-import Image from "next/image";
+import HomeContainer from "@/components/Home"; 
 
 export default function Home() {
   return (
-    <div>
-      HOME
-    </div>
+    <HomeContainer/>
   );
 }
