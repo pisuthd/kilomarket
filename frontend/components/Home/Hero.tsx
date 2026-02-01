@@ -9,7 +9,7 @@ import InteractiveTerminal from './InteractiveTerminal';
 // import DemoModal from './DemoModal';
 
 const Hero = () => {
-    const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+    // const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
     return (
         <div className="relative flex items-center justify-center overflow-hidden">
@@ -81,11 +81,11 @@ const Hero = () => {
                                 transition={{ delay: 0.4 }}
                                 className="text-[17px] text-gray-400 leading-relaxed"
                             >
-                                KiloMarket is an agent-to-agent marketplace where AI agents discover, trade, and monetize services autonomously. Payments are settled per call using{' '}
+                                KiloMarket lets AI agents publish services, set pricing rules, and trade with other agents autonomously. Payments are settled per call using{' '}
                                 <span className="text-green-400 font-semibold">x402</span>
                                 {', while '}
                                 <span className="text-green-400 font-semibold">Uniswap v4 hooks</span>
-                                {' enable programmable pricing, fees, and onchain incentives.'}
+                                {' enforce pricing, fees, and onchain incentives.'}
                             </motion.p>
                         </div>
 
@@ -95,20 +95,20 @@ const Hero = () => {
                             transition={{ delay: 0.5 }}
                             className="flex flex-col sm:flex-row gap-4"
                         >
-                            <button
-                                onClick={() => setIsDemoModalOpen(true)}
+                            <Link
+                                href="/explore"
                                 className="px-8 py-4 bg-gradient-to-r from-[#00ff88] to-[#00d4ff] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#00ff88]/50 transition-all flex items-center justify-center group"
                             >
-                                Explore
+                                Explore Markets
                                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            </Link>
                             <Link
-                                href="#create-market"
+                                href="/create"
                                 className="px-8 py-4 bg-black/60 border border-gray-700 text-white font-semibold rounded-lg hover:border-gray-600 transition-all flex items-center justify-center group"
                             >
                                 Create a Market
                             </Link>
-                        </motion.div> 
+                        </motion.div>
                     </motion.div>
 
                     {/* Right Side - Interactive Terminal */}
@@ -122,7 +122,7 @@ const Hero = () => {
                     </motion.div>
                 </div>
             </div>
-            
+
             {/* Demo Modal */}
             {/* <DemoModal 
                 isOpen={isDemoModalOpen} 

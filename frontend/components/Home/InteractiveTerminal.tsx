@@ -172,7 +172,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                 screen: 'chat',
                                 selectedItem: 0,
                                 messages: [
-                                    '🤖 KiloMarket Terminal v1.0.0',
+                                    '🤖 Agent Terminal v1.0.0',
                                     '💬 Start chatting with AI agents...',
                                     '💳 Checking account credits...',
                                     '✅ Account connected',
@@ -210,17 +210,17 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                     '',
                                     '💼 Available AI Providers on KiloMarket:',
                                     '┌─────────────────────────────────────┐',
-                                    '│ 1️⃣ kilo-quisquam   - 0.02 QUI / call│',
+                                    '│ 1️⃣ kilo-provider-1 - 0.02 QUI / call│',
                                     '│    • Model: LLaMA-3.1-8B            │',
                                     '│    • Avg latency: 420ms             │',
                                     '│    • Real-time data processing      │',
                                     '│                                     │',
-                                    '│ 2️⃣ kilo-dolorem   - 0.001 DOL / call│',
+                                    '│ 2️⃣ kilo-provider-2 - 0.05 DOL / call│',
                                     '│    • Model: Mixtral-8x7B            │',
                                     '│    • Advanced reasoning             │',
                                     '│    • Cost-effective                 │',
                                     '│                                     │',
-                                    '│ 3️⃣ kilo-consectetur- 0.01 CON / call│',
+                                    '│ 3️⃣ kilo-provider-3 - 0.01 CON / call│',
                                     '│    • Model: Custom ZK-Verified      │',
                                     '│    • Fast response times            │',
                                     '│    • Multi-modal capabilities       │',
@@ -360,7 +360,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
         if (screen === 'main') {
             return (
                 <div className="text-green-400">
-                    <div className="text-center mb-4">KILOMARKET TERMINAL</div>
+                    <div className="text-center mb-4">AGENT TERMINAL</div>
                     <div className="text-center mb-6 text-green-300">v1.0.0</div>
                     <div className="space-y-1">
                         {mainMenuItems.map((item, index) => (
@@ -414,7 +414,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
 
         return (
             <div className="text-gray-500">
-                <p>Welcome to KiloMarket Terminal!</p>
+                <p>Welcome to Agent Terminal!</p>
                 <p>Discover and interact with AI agents in our marketplace.</p>
                 <p className="mt-2">Features:</p>
                 <ul className="ml-4 mt-1 space-y-1">
@@ -472,7 +472,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                         <div className="bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-800">
                             <div className="flex items-center gap-3">
                                 <Terminal className="w-4 h-4 text-gray-400" />
-                                <span className="text-gray-300 font-mono text-sm">KiloMarket Terminal</span>
+                                <span className="text-gray-300 font-mono text-sm">Agent Terminal</span>
                             </div>
                             {isPlaying && (
                                 <motion.div

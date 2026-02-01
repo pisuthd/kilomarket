@@ -9,7 +9,7 @@ import MoreDropdown from "./MoreDropdown"
 
 const navItems = [
     // { href: '/', label: 'Home' },
-    { href: '/markets', label: 'Markets' },
+    { href: '/explore', label: 'Explore' },
     { href: '/create', label: 'Create' },
     { href: '/dashboard', label: 'Dashboard' }
 ];
