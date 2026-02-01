@@ -11,10 +11,15 @@ interface DropdownItem {
 
 const dropdownItems: DropdownItem[] = [
   {
-    label: 'GitHub',
+    label: 'Demo Agent',
     href: 'https://github.com/pisuthd/kilomarket',
     external: true,
   }, 
+  {
+    label: 'GitHub',
+    href: 'https://github.com/pisuthd/kilomarket',
+    external: true,
+  }
 ];
 
 export default function MoreDropdown() {

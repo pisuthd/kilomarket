@@ -8,10 +8,10 @@ import MoreDropdown from "./MoreDropdown"
 
 
 const navItems = [
-    // { href: '/', label: 'Home' },
+    { href: '/', label: 'Home' },
     { href: '/explore', label: 'Explore' },
     { href: '/create', label: 'Create' },
-    { href: '/dashboard', label: 'Dashboard' }
+    // { href: '/dashboard', label: 'Dashboard' }
 ];
 
 export default function Navbar() {
