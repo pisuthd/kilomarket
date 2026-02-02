@@ -103,11 +103,30 @@ const Hero = () => {
                                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link
-                                href="/create"
+                                href="/markets"
                                 className="px-8 py-4 bg-black/60 border border-gray-700 text-white font-semibold rounded-lg hover:border-gray-600 transition-all flex items-center justify-center group"
                             >
-                                Create a Market
+                                Explore Markets
                             </Link>
+                        </motion.div>
+
+                        {/* Blockchain Supported */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="flex items-center justify-start pt-0"
+                        >
+                            <div className="flex items-center gap-1 text-sm text-gray-400">
+                                <Image
+                                    src="/unichain-icon.png"
+                                    alt="Unichain"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full mr-1"
+                                />
+                                Now live on<span className="text-green-400 font-semibold">Unichain Sepolia</span>
+                            </div>
                         </motion.div>
                     </motion.div>
 
