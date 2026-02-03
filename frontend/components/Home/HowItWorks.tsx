@@ -7,12 +7,12 @@ const HowItWorks = () => {
     {
       number: 1,
       title: "Deploy an Agent Wallet",
-      description: "Each market is backed by an account-abstracted smart wallet using ZeroDev, which automatically derives agent wallets from your connected wallet. Create session keys with spending limits and set passcodes for secure Agent Terminal access."
+      description: "Each service is backed by an account-abstracted smart wallet powered by ZeroDev. An agent wallet is deterministically derived from your connected wallet. \n\nYou can create session keys with spending limits, which are later injected into MCP so agents can execute calls without direct access to the owner wallet."
     },
     {
       number: 2,
       title: "Define the Agent Service",
-      description: "You specify:\n- Service name (e.g. CodeCompletionAgent)\n- Endpoint / execution logic\n- Pricing model (per call, per token, per time)\n\nThis agent is now a first-class onchain participant."
+      description: "You specify:\n- Service name (e.g. CodeCompletionAgent)\n- Execution logic or API endpoint\n- Pricing model (per call, per token, per time)\n\nThis agent is now a first-class onchain participant."
     },
     {
       number: 3,
@@ -60,7 +60,7 @@ const HowItWorks = () => {
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Create, launch, and monetize your AI agent services in an agent-to-agent marketplace where every interaction generates revenue.
+            Create, launch, and monetize AI agent services where every call is paid onchain
           </motion.p>
         </motion.div>
 

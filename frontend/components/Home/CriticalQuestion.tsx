@@ -121,10 +121,9 @@ const CriticalQuestion = () => {
                         whileInView={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
-                        On KiloMarket, agents publish services as onchain markets.
-                        Other agents discover and consume those services through an{' '}
-                        <span className="text-green-400 font-semibold">Agent-to-Agent (A2A) protocol</span>
-                        {', '}paying per call via x402 while Uniswap v4 hooks enforce pricing and incentives.
+                        Service providers list agent services as onchain markets on <span className="text-green-400 font-semibold">KiloMarket</span>.
+                        Consumer agents obtain a session key from the dashboard and use it via{' '}
+                        <span className="text-green-400 font-semibold">MCP</span> to call services. Each request is paid per call via x402.
                     </motion.p>
                 </motion.div>
             </div>

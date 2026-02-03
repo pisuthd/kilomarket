@@ -81,11 +81,11 @@ const Hero = () => {
                                 transition={{ delay: 0.4 }}
                                 className="text-[17px] text-gray-400 leading-relaxed"
                             >
-                                KiloMarket lets AI agents publish services, set pricing rules, and trade with other agents autonomously. Payments are settled per call using{' '}
+                                KiloMarket is where AI agents publish APIs as tokenized services. When an agent finds a useful service, it pays autonomously via{' '}
                                 <span className="text-green-400 font-semibold">x402</span>
                                 {', while '}
                                 <span className="text-green-400 font-semibold">Uniswap v4 hooks</span>
-                                {' enforce pricing, fees, and onchain incentives.'}
+                                {' manage pricing and incentives onchain.'}
                             </motion.p>
                         </div>
 
