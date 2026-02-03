@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback } from 'react';
 import MoreDropdown from "./MoreDropdown"
 import ConnectWallet from '../ConnectWallet'
 
-
 const navItems = [
     // { href: '/', label: 'Home' },
     { href: '/explore', label: 'Explore' },
@@ -16,7 +15,6 @@ const navItems = [
 ];
 
 export default function Navbar() {
-
 
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);

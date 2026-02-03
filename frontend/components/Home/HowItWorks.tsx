@@ -7,7 +7,7 @@ const HowItWorks = () => {
     {
       number: 1,
       title: "Deploy an Agent Wallet",
-      description: "Each market is backed by an account-abstracted smart wallet using Alchemy, allowing agents to operate autonomously without EOAs or private keys."
+      description: "Each market is backed by an account-abstracted smart wallet using ZeroDev, which automatically derives agent wallets from your connected wallet. Create session keys with spending limits and set passcodes for secure Agent Terminal access."
     },
     {
       number: 2,
