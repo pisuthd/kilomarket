@@ -186,6 +186,11 @@ body::before {
     background: #ffff00;
     box-shadow: 0 0 5px #ffff00;
 }
+
+.status-indicator.disabled {
+    background: #666666;
+    box-shadow: 0 0 5px #666666;
+}
 """
 
 # JavaScript for keyboard navigation
@@ -250,13 +255,16 @@ class TerminalMenu {
         });
     }
     
-    select() {
+    async select() {
         const selectedItem = this.menuItems[this.selectedIndex];
         const action = selectedItem.getAttribute('data-action');
         
         switch(action) {
             case 'interactive':
                 window.location.href = '/interactive';
+                break;
+            case 'toggle-a2a':
+                await this.toggleA2AServer();
                 break;
             case 'markets':
                 window.location.href = '/markets';
@@ -270,6 +278,41 @@ class TerminalMenu {
             case 'settings':
                 window.location.href = '/settings';
                 break;
+        }
+    }
+    
+    async toggleA2AServer() {
+        try {
+            // Show loading state
+            const selectedItem = this.menuItems[this.selectedIndex];
+            const originalText = selectedItem.innerHTML;
+            selectedItem.innerHTML = '<span class="status-indicator warning"></span>Toggling A2A Server...';
+            
+            // Make API call
+            const response = await fetch('/toggle-a2a', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Reload page to show updated status
+                window.location.reload();
+            } else {
+                // Show error and restore original text
+                selectedItem.innerHTML = originalText;
+                alert('Failed to toggle A2A Server: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error toggling A2A server:', error);
+            const selectedItem = this.menuItems[this.selectedIndex];
+            selectedItem.innerHTML = '<span class="status-indicator offline"></span>Toggle Failed';
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         }
     }
     
