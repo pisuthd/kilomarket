@@ -259,4 +259,11 @@ class MultiA2AServerManager:
 
 
 # Global multi-server manager instance
-a2a_manager = MultiA2AServerManager()
+a2a_manager = None  # Don't initialize at import time
+
+def get_a2a_manager():
+    """Get or create the A2A manager instance"""
+    global a2a_manager
+    if a2a_manager is None:
+        a2a_manager = MultiA2AServerManager()
+    return a2a_manager 
