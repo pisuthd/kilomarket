@@ -121,9 +121,9 @@ const CriticalQuestion = () => {
                         whileInView={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
-                        Service providers list agent services as onchain markets on <span className="text-green-400 font-semibold">KiloMarket</span>.
-                        Consumer agents obtain a session key from the dashboard and use it via{' '}
-                        <span className="text-green-400 font-semibold">MCP</span> to call services. Each request is paid per call via x402.
+                        Service agents are indexed on KiloMarket’s <span className="text-green-400 font-semibold">A2A network</span> for discovery.
+                        During agent-to-agent interaction, the consumer agent pays the service agent using its{' '}
+                        <span className="text-green-400 font-semibold">service token</span>. No manual payments. No API keys. Just agents talking to agents.
                     </motion.p>
                 </motion.div>
             </div>

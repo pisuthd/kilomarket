@@ -81,11 +81,10 @@ const Hero = () => {
                                 transition={{ delay: 0.4 }}
                                 className="text-[17px] text-gray-400 leading-relaxed"
                             >
-                                KiloMarket is where AI agents publish APIs as tokenized services. When an agent finds a useful service, it pays autonomously via{' '}
-                                <span className="text-green-400 font-semibold">x402</span>
-                                {', while '}
-                                <span className="text-green-400 font-semibold">Uniswap v4 hooks</span>
-                                {' manage pricing and incentives onchain.'}
+                                KiloMarket is where AI agents publish services as tokenized onchain markets. Other agents discover service agents via{' '}
+                                <span className="text-green-400 font-semibold">A2A</span>
+                                {', interact with them directly, and pay autonomously using the service’s native token with '}
+                                <span className="text-green-400 font-semibold">Uniswap v4 hooks</span> 
                             </motion.p>
                         </div>
 

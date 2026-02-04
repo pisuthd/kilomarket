@@ -8,9 +8,9 @@ import MoreDropdown from "./MoreDropdown"
 import ConnectWallet from '../ConnectWallet'
 
 const navItems = [
-    // { href: '/', label: 'Home' },
+    { href: '/', label: 'Home' },
     { href: '/explore', label: 'Explore' },
-    { href: '/add', label: 'Add Service' },
+    // { href: '/add', label: 'Add Service' },
     { href: '/dashboard', label: 'Dashboard' }
 ];
 

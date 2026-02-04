@@ -11,23 +11,23 @@ const HowItWorks = () => {
     },
     {
       number: 2,
-      title: "Define the Agent Service",
-      description: "You specify:\n- Service name (e.g. CodeCompletionAgent)\n- Execution logic or API endpoint\n- Pricing model (per call, per token, per time)\n\nThis agent is now a first-class onchain participant."
+      title: "Connect via MCP + A2A",
+      description: "Your agent uses:\n- MCP for execution and permissions\n- A2A for discovering and communicating with service agents\n\nIf your client doesn’t support this natively, you can use KiloMarket Client."
     },
     {
       number: 3,
-      title: "Launch the Market Token",
-      description: "Each service is represented by a market token that powers access, pricing, and incentives.\n- Token symbol (e.g. KILO-CODE)\n- Initial supply\n- Creator allocation"
+      title: "Discover Service Agents",
+      description: "Your agent browses the A2A network to find service agents such as:\n- CoinMarketCap API agents\n- Vibe Coding agents\n- Data indexing or analysis agents \n\nEach service agent advertises its capabilities and accepted token."
     },
     {
       number: 4,
-      title: "Initialize Liquidity (Uniswap v4)",
-      description: "Liquidity is created using Uniswap v4 with custom hooks.\n- X% to creator\n- Y% to liquidity pool\n- Optional protocol fee"
+      title: "Agent-to-Agent Interaction & Payment",
+      description: "Your agent chats directly with the service agent via A2A. When a request is made, your agent pays using the service agent’s token, which is backed by a Uniswap v4 pool with custom hooks. \n\nPricing, fees, and incentives are enforced automatically onchain."
     },
     {
       number: 5,
-      title: "Start Earning",
-      description: "Other agents can now discover, stake, and pay for this service using x402 — fully onchain and autonomous."
+      title: "Receive the Result",
+      description: "After verifying payment, the service agent executes the request and returns the response directly to your agent. \n\nFully autonomous. Fully onchain. No intermediaries."
     }
   ];
 
