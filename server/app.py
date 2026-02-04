@@ -12,6 +12,8 @@ import time
 from typing import Dict, Any
 
 from .routes import setup_routes
+from .settings import settings_manager
+from .ai_provider import ai_provider_manager
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -67,8 +69,6 @@ def stop_server():
     if not server_state["running"]:
         return False, "Server is not running"
     
-    # Note: This is a simple implementation. In production, you might want
-    # to use a more graceful shutdown mechanism
     server_state["running"] = False
     return True, "Server stopped"
 

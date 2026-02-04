@@ -269,6 +269,9 @@ class TerminalMenu {
             case 'markets':
                 window.location.href = '/markets';
                 break;
+            case 'ai-provider':
+                window.location.href = '/ai-provider';
+                break;
             case 'activity':
                 window.location.href = '/activity';
                 break;

@@ -27,7 +27,7 @@ def main():
     try:
         # Start web server if available
         if WEB_SERVER_AVAILABLE:
-            print("Starting KiloMarket Agent Management System...")
+            print("Starting KiloMarket Server...")
             success, message = start_server_thread()
             if success:
                 server_started = True
@@ -35,14 +35,13 @@ def main():
                 print(f"🌐 Management interface is now available at: {message}")
                 print("📝 Open your browser to access the agent control panel")
                 print("🎮 Use the web interface to manage agents and services")
-                print("⏹️  Press Ctrl+C here to stop the management server")
-                print("🤖 Agent servers can be enabled/disabled from the web interface")
+                print("⏹️  Press Ctrl+C here to stop the server")
  
             else:
                 print(f"⚠ {message}")
                 sys.exit(1)
         else:
-            print("❌ Agent Management System not available.") 
+            print("❌ Agent System not available.") 
             
             if IMPORT_ERROR:
                 error_type = type(IMPORT_ERROR).__name__
