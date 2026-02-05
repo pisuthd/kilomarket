@@ -100,7 +100,7 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None)
                         <span class="status-indicator online"></span>Explore Markets
                     </div>
                     <div class="menu-item" data-action="ai-provider">
-                        <span class="status-indicator {ai_indicator}"></span>{ai_text}
+                        <span class="status-indicator {ai_indicator}"></span>AI Provider ({ai_text})
                     </div>
                     <div class="menu-item" data-action="settings">
                         <span class="status-indicator online"></span>Settings

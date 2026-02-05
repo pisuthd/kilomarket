@@ -108,7 +108,7 @@ def main():
             time.sleep(1)
         
     except KeyboardInterrupt:
-        print("\n👋 Goodbye! Thanks for using KiloMarket Agent Management System.")
+        print("\n👋 Goodbye! Thanks for using KiloMarket.")
         
         # Stop A2A server if it was started
         if a2a_started and WEB_SERVER_AVAILABLE:
@@ -122,10 +122,10 @@ def main():
         # Stop web server if it was started
         if server_started and WEB_SERVER_AVAILABLE:
             stop_server()
-            print("Management server stopped.")
+            print("KiloMarket server stopped.")
             
     except Exception as e:
-        print(f"\n❌ An error occurred in Agent Management System: {e}")
+        print(f"\n❌ An error occurred in KiloMarket Server: {e}")
         print("Please check your agent configuration and try again.")
    
         

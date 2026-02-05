@@ -132,3 +132,6 @@ frontend/node_modules/
 
 # MCP credentials - NEVER commit these files
 config/credentials.env
+
+sessions/
+kilomarket_settings.json

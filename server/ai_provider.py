@@ -28,14 +28,14 @@ class AIProviderManager:
                 "configured": True,
                 "provider": provider_id,
                 "provider_name": provider_name,
-                "status_text": f"AI Provider ({provider_name})"
+                "status_text": provider_name
             }
         else:
             return {
                 "configured": False,
                 "provider": None,
                 "provider_name": None,
-                "status_text": "AI Provider (Not Set)"
+                "status_text": "Not Set"
             }
     
     def get_provider_name(self, provider_id: str) -> str:
