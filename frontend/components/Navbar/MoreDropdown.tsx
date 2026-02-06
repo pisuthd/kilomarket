@@ -11,12 +11,12 @@ interface DropdownItem {
 
 const dropdownItems: DropdownItem[] = [
   {
-    label: 'Try Demo Agent',
+    label: 'Demo Agent',
     href: 'https://github.com/pisuthd/kilomarket',
     external: true,
   }, 
   {
-    label: 'GitHub Repo',
+    label: 'GitHub',
     href: 'https://github.com/pisuthd/kilomarket',
     external: true,
   }

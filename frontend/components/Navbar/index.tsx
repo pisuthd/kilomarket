@@ -5,13 +5,13 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import MoreDropdown from "./MoreDropdown"
-import ConnectWallet from '../ConnectWallet'
+// import ConnectWallet from '../ConnectWallet'
 
 const navItems = [
     { href: '/', label: 'Home' },
     { href: '/explore', label: 'Explore' },
     // { href: '/add', label: 'Add Service' },
-    { href: '/dashboard', label: 'Dashboard' }
+    // { href: '/dashboard', label: 'Dashboard' }
 ];
 
 export default function Navbar() {
@@ -67,7 +67,7 @@ export default function Navbar() {
 
                             <MoreDropdown />
 
-                            <ConnectWallet />
+                            {/* <ConnectWallet /> */}
 
                         </div>
 
@@ -137,9 +137,9 @@ export default function Navbar() {
                                     <MoreDropdown />
                                 </div>
 
-                                <div className="block px-4 py-2">
+                                {/* <div className="block px-4 py-2">
                                     <ConnectWallet />
-                                </div>
+                                </div> */}
 
                             </div>
                         </div>

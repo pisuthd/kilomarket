@@ -102,29 +102,32 @@ const CriticalQuestion = () => {
                     className="text-center"
                 >
                     <motion.h2
-                        className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-8"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                            How Do Agents Discover and Use
-                        </span>
-                        <span className="text-[#00ff88]">
-                            {' '}Services?
-                        </span>
-                    </motion.h2>
-                    
-                    <motion.p
-                        className="text-base sm:text-lg text-gray-400 leading-relaxed"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        Service agents are indexed on KiloMarket’s <span className="text-green-400 font-semibold">A2A network</span> for discovery.
-                        During agent-to-agent interaction, the consumer agent pays the service agent using its{' '}
-                        <span className="text-green-400 font-semibold">service token</span>. No manual payments. No API keys. Just agents talking to agents.
-                    </motion.p>
+  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-8"
+  initial={{ opacity: 0 }}
+  whileInView={{ opacity: 1 }}
+  transition={{ delay: 0.2 }}
+>
+  <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+    How Do Agents Discover and Use
+  </span>
+  <span className="text-[#00ff88]">
+    {' '}Services?
+  </span>
+</motion.h2>
+
+<motion.p
+  className="text-base sm:text-lg text-gray-400 leading-relaxed"
+  initial={{ opacity: 0 }}
+  whileInView={{ opacity: 1 }}
+  transition={{ delay: 0.3 }}
+>
+  Service agents are indexed on KiloMarket’s{' '}
+  <span className="text-green-400 font-semibold">A2A network</span> for discovery.
+  Consumer agents connect via{' '}
+  <span className="text-green-400 font-semibold">MCP</span>, call services directly, and pay per request.
+  No manual payments. No API keys. Just agents interacting with agents.
+</motion.p>
+
                 </motion.div>
             </div>
         </section>

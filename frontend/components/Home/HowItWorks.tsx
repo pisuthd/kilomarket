@@ -1,35 +1,70 @@
 "use client"
 
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const HowItWorks = () => {
-  const steps = [
+  const [activeTab, setActiveTab] = useState<'consumer' | 'service'>('consumer');
+
+  const consumerSteps = [
     {
       number: 1,
-      title: "Deploy an Agent Wallet",
-      description: "Each service is backed by an account-abstracted smart wallet powered by ZeroDev. An agent wallet is deterministically derived from your connected wallet. \n\nYou can create session keys with spending limits, which are later injected into MCP so agents can execute calls without direct access to the owner wallet."
+      title: "Connect Your Agent",
+      description: "Connect your AI agent to KiloMarket using MCP + A2A support. Your agent receives a verifiable identity and can query the marketplace index for available services.\n\nCompatible with Claude, OpenAI, and custom agent frameworks."
     },
     {
       number: 2,
-      title: "Connect via MCP + A2A",
-      description: "Your agent uses:\n- MCP for execution and permissions\n- A2A for discovering and communicating with service agents\n\nIf your client doesn’t support this natively, you can use KiloMarket Client."
+      title: "Enable Session Wallet",
+      description: "Create an agent wallet and generate session keys with spending limits using account abstraction. Session keys allow autonomous payments without exposing the owner wallet.\n\nLimits and permissions are configured from the dashboard."
     },
     {
       number: 3,
-      title: "Discover Service Agents",
-      description: "Your agent browses the A2A network to find service agents such as:\n- CoinMarketCap API agents\n- Vibe Coding agents\n- Data indexing or analysis agents \n\nEach service agent advertises its capabilities and accepted token."
+      title: "Discover Services",
+      description: "Your agent queries the A2A index to discover service agents by capability and pricing:\n- Data & API agents\n- Coding and automation agents\n- Research and monitoring agents\n- Trading and analytics tools\n\nEach service publishes endpoint, pricing, and usage rules."
     },
     {
       number: 4,
-      title: "Agent-to-Agent Interaction & Payment",
-      description: "Your agent chats directly with the service agent via A2A. When a request is made, your agent pays using the service agent’s token, which is backed by a Uniswap v4 pool with custom hooks. \n\nPricing, fees, and incentives are enforced automatically onchain."
+      title: "Call & Pay Instantly",
+      description: "Your agent invokes the service via MCP. Payment is sent per request through a state-channel session with instant off-chain settlement.\n\nSpending limits are enforced automatically by the session key."
     },
     {
       number: 5,
-      title: "Receive the Result",
-      description: "After verifying payment, the service agent executes the request and returns the response directly to your agent. \n\nFully autonomous. Fully onchain. No intermediaries."
+      title: "Receive Results",
+      description: "The service agent verifies payment and returns results directly through the MCP response.\n\nNo API keys. No manual billing. Fully automated agent-to-agent execution."
     }
   ];
+
+
+  const serviceSteps = [
+    {
+      number: 1,
+      title: "Build Your Service Agent",
+      description: "Develop an MCP-compatible agent that provides a specialized capability — such as market data, coding assistance, automation, or research.\n\nDefine inputs, outputs, and per-request pricing."
+    },
+    {
+      number: 2,
+      title: "Register on A2A Index",
+      description: "Register your service agent on the KiloMarket A2A index so other agents can discover it.\n\nPublish service metadata, endpoint, pricing, and usage limits."
+    },
+    {
+      number: 3,
+      title: "Enable State-Channel Payments",
+      description: "Open a state-channel payment session (powered by Yellow Network) to receive instant off-chain payments from consumer agents.\n\nFunds are deposited once and settled onchain when sessions close."
+    },
+    {
+      number: 4,
+      title: "Verify & Serve Requests",
+      description: "When a consumer agent calls your service, verify the state-channel payment proof, then execute and return results via MCP.\n\nPayment and service execution are fully automated."
+    },
+    {
+      number: 5,
+      title: "Scale Your Agent Business",
+      description: "Serve multiple agents concurrently, monitor usage, and adjust pricing as demand grows.\n\nEarn per-call revenue through instant agent-to-agent payments."
+    }
+  ];
+
+
+  const steps = activeTab === 'consumer' ? consumerSteps : serviceSteps;
 
   return (
     <section className="py-20 px-6 bg-gradient-to-b from-transparent via-black/20 to-black/40">
@@ -64,11 +99,46 @@ const HowItWorks = () => {
           </motion.p>
         </motion.div>
 
+        {/* Tab Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex justify-center mb-12"
+        >
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-1 flex gap-1 border border-gray-700">
+            <button
+              onClick={() => setActiveTab('consumer')}
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${activeTab === 'consumer'
+                ? 'bg-[#00ff88] text-black'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                }`}
+            >
+              Consumer Agent
+            </button>
+            <button
+              onClick={() => setActiveTab('service')}
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${activeTab === 'service'
+                ? 'bg-[#00ff88] text-black'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                }`}
+            >
+              Service Agent
+            </button>
+          </div>
+        </motion.div>
+
         {/* Spaced Vertical Timeline */}
-        <div className="max-w-3xl mx-auto">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="max-w-3xl mx-auto"
+        >
           {steps.map((step, index) => (
             <motion.div
-              key={step.number}
+              key={`${activeTab}-${step.number}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -102,7 +172,7 @@ const HowItWorks = () => {
               </motion.div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
       </div>
     </section>

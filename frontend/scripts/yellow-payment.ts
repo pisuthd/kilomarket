@@ -250,6 +250,26 @@ async function main() {
         // -------------------------------------------------------------------
         // 4. Off-Chain Transfer
         // -------------------------------------------------------------------
+
+
+        // const secondaryAddress = '0x50D0aD29e0dfFBdf5DAbf4372a5a1A1C1d28A6b1';
+        const secondaryAddress = sessionAddress
+        console.log(`  Attempting Transfer to Secondary Wallet: ${secondaryAddress}...`);
+
+        const transferMsg = await createTransferMessage(
+            sessionSigner,
+            {
+                destination: secondaryAddress,
+                allocations: [{
+                    asset: 'ytest.usd',
+                    amount: '10'
+                }]
+            },
+            Date.now()
+        );
+        ws.send(transferMsg);
+        console.log('  Sent transfer request...');
+
     };
 
     // State to prevent infinite auth loops
@@ -524,28 +544,49 @@ async function main() {
             });
 
             console.log('✓ Channel resized on-chain:', txHash);
-            console.log('✓ Channel funded with 20 USDC');
+            console.log('✓✓ Channel funded with 20 USDC 1234');
 
             // Skip Transfer for debugging
-            console.log('  Skipping transfer to verify withdrawal amount...');
-            console.log('  Debug: channel_id =', channel_id);
+            // console.log('  Skipping transfer to verify withdrawal amount...');
+            // console.log('  Debug: channel_id =', channel_id);
+
+            activeChannelId = channel_id
 
             // Wait for server to sync state
             await new Promise(r => setTimeout(r, 3000));
 
-            if (channel_id) {
-                console.log('  Closing channel:', channel_id);
-                const closeMsg = await createCloseChannelMessage(
-                    sessionSigner,
-                    channel_id as `0x${string}`,
-                    account.address
-                );
-                ws.send(closeMsg);
-            } else {
-                console.log('  No channel ID available to close.');
-            }
+            // if (channel_id) {
+            //     console.log('  Closing channel:', channel_id);
+            //     const closeMsg = await createCloseChannelMessage(
+            //         sessionSigner,
+            //         channel_id as `0x${string}`,
+            //         account.address
+            //     );
+            //     ws.send(closeMsg);
+            // } else {
+            //     console.log('  No channel ID available to close.');
+            // }
+
+            // const secondaryAddress = '0x50D0aD29e0dfFBdf5DAbf4372a5a1A1C1d28A6b1';
+            const secondaryAddress = sessionAddress
+            console.log(`  Attempting Transfer to Secondary Wallet: ${secondaryAddress}...`);
+
+            const transferMsg = await createTransferMessage(
+                sessionSigner,
+                {
+                    destination: secondaryAddress,
+                    allocations: [{
+                        asset: 'ytest.usd',
+                        amount: '10'
+                    }]
+                },
+                Date.now()
+            );
+            ws.send(transferMsg);
+            console.log('  Sent transfer request...');
+
         }
-        // const secondaryAddress = '0x7df1fef832b57e46de2e1541951289c04b2781aa';
+        // const secondaryAddress = '0x50D0aD29e0dfFBdf5DAbf4372a5a1A1C1d28A6b1';
         // console.log(`  Attempting Transfer to Secondary Wallet: ${secondaryAddress}...`);
 
         // const transferMsg = await createTransferMessage(
@@ -562,22 +603,22 @@ async function main() {
         // ws.send(transferMsg);
         // console.log('  Sent transfer request...');
 
-        // if (response.res && response.res[1] === 'transfer') {
-        //     console.log('✓ Transfer complete!');
-        //     console.log('  Amount: 10 USDC');
+        if (response.res && response.res[1] === 'transfer') {
+            console.log('✓ Transfer complete!');
+            console.log('  Amount: 10 USDC');
 
-        //     if (activeChannelId) {
-        //         console.log('  Closing channel:', activeChannelId);
-        //         const closeMsg = await createCloseChannelMessage(
-        //             sessionSigner,
-        //             activeChannelId as `0x${string}`,
-        //             account.address
-        //         );
-        //         ws.send(closeMsg);
-        //     } else {
-        //         console.log('  No active channel ID to close.');
-        //     }
-        // }
+            if (activeChannelId) {
+                console.log('  Closing channel:', activeChannelId);
+                const closeMsg = await createCloseChannelMessage(
+                    sessionSigner,
+                    activeChannelId as `0x${string}`,
+                    account.address
+                );
+                ws.send(closeMsg);
+            } else {
+                console.log('  No active channel ID to close.');
+            }
+        }
 
         if (response.res && response.res[1] === 'close_channel') {
             const { channel_id, state, server_signature } = response.res[2];

@@ -10,7 +10,7 @@ const HomeContainer = () => {
              <Hero /> 
              <CriticalQuestion/>
              <HowItWorks />
-             <UseCases />
+             {/*<UseCases />*/}
              <CTA />
         </div>
     )

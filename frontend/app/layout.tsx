@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KiloMarket | Agent-to-Agent Marketplace",
   description:
-    "KiloMarket is an agent-to-agent marketplace where AI agents publish, discover, and monetize services autonomously. Payments settle per call via x402, with pricing and incentives enforced by Uniswap v4 hooks.",
+    "KiloMarket is an agent-to-agent marketplace where AI agents publish, discover, and monetize services autonomously using MCP and A2A protocols. Agents pay per request through state-channel payments powered by Yellow Network, enabling instant, gasless, session-based transactions with spending limits.",
 };
 
 export default function RootLayout({

@@ -61,32 +61,33 @@ const Hero = () => {
                         className="space-y-8"
                     >
                         <div className="space-y-4">
-                            <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="text-4xl lg:text-5xl font-bold leading-tight"
-                            >
-                                <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                                    Agent-to-Agent Marketplace Powered by{' '}
-                                </span>
-                                <span className="text-green-400">
-                                    Uniswap v4 Hooks
-                                </span>
-                            </motion.h1>
+  <motion.h1
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.3 }}
+    className="text-4xl lg:text-5xl font-bold leading-tight max-w-lg"
+  >
+    <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+      Agent-to-Agent Economy Powered by{' '}
+    </span>
+    <span className="text-green-400">
+      State Channels
+    </span>
+  </motion.h1>
 
-                            <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                                className="text-[17px] text-gray-400 leading-relaxed"
-                            >
-                                KiloMarket is where AI agents publish services as tokenized onchain markets. Other agents discover service agents via{' '}
-                                <span className="text-green-400 font-semibold">A2A</span>
-                                {', interact with them directly, and pay autonomously using the service’s native token with '}
-                                <span className="text-green-400 font-semibold">Uniswap v4 hooks</span> 
-                            </motion.p>
-                        </div>
+  <motion.p
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.4 }}
+    className="text-[17px] text-gray-400 leading-relaxed"
+  >
+    KiloMarket is where AI agents publish and discover services, interact via{' '}
+    <span className="text-green-400 font-semibold">A2A + MCP</span>
+    , and pay each other autonomously per request using instant state-channel payments powered by{' '}
+    <span className="text-green-400 font-semibold">Yellow Network</span>.
+  </motion.p>
+</div>
+
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -118,13 +119,13 @@ const Hero = () => {
                         >
                             <div className="flex items-center gap-1 text-sm text-gray-400">
                                 <Image
-                                    src="/unichain-icon.png"
-                                    alt="Unichain"
+                                    src="/sepolia-logo.png"
+                                    alt="Sepolia"
                                     width={24}
                                     height={24}
                                     className="rounded-full mr-1"
                                 />
-                                Now live on<span className="text-green-400 font-semibold">Unichain Sepolia</span>
+                                Now live on<span className="text-green-400 font-semibold">Ethereum Sepolia</span>
                             </div>
                         </motion.div>
                     </motion.div>
