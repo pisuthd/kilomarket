@@ -97,7 +97,7 @@ class InteractiveMenu extends SubMenu {{
                 const sessionSize = session.file_size || '0B';
                 const messageCount = session.message_count || 0;
                 const aiProvider = session.ai_provider?.provider_name || 
-                                   (session.ai_provider?.provider ? session.ai_provider.provider.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+                                   (session.ai_provider?.provider ? session.ai_provider.provider.replace(/_/g, ' ').replace(/\\\\b\\\\w/g, l => l.toUpperCase()) : 
                                    'Unknown');
                 
                 const sessionItem = document.createElement('div');
@@ -135,12 +135,37 @@ class InteractiveMenu extends SubMenu {{
         
         switch(action) {{
             case 'new':
-                window.location.href = '/new-session';
+                // Directly create session and navigate to chat
+                createSessionAndStartChat();
                 break;
             case 'back':
                 window.location.href = '/';
                 break;
         }}
+    }}
+}}
+
+async function createSessionAndStartChat() {{
+    try {{
+        // Create session
+        const response = await fetch('/create-session', {{
+            method: 'POST',
+            headers: {{
+                'Content-Type': 'application/json',
+            }},
+            body: JSON.stringify({{}})
+        }});
+        
+        const result = await response.json();
+        
+        if (result.success) {{
+            // Navigate directly to chat
+            window.location.href = `/chat/${{result.session_id}}`;
+        }} else {{
+            alert('Failed to create session: ' + result.error);
+        }}
+    }} catch (error) {{
+        alert('Network error: ' + error.message);
     }}
 }}
 
@@ -160,46 +185,7 @@ def new_session_template(ai_provider_status: dict = None) -> str:
     padding: 20px;
     margin: 20px;
     border-radius: 5px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    color: #00ff00;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.form-group textarea {
-    width: 100%;
-    min-height: 200px;
-    background: #000000;
-    border: 1px solid #00cc00;
-    color: #ffffff;
-    padding: 10px;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    resize: vertical;
-}
-
-.form-group input {
-    width: 100%;
-    background: #000000;
-    border: 1px solid #00cc00;
-    color: #ffffff;
-    padding: 10px;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-}
-
-.form-group textarea:focus,
-.form-group input:focus {
-    outline: none;
-    border-color: #00cc00;
-    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+    text-align: center;
 }
 
 .form-buttons {
@@ -231,9 +217,8 @@ def new_session_template(ai_provider_status: dict = None) -> str:
 
 .ai-provider-info {
     color: #00cc00;
-    font-size: 12px;
-    margin-bottom: 10px;
-    text-align: center;
+    font-size: 14px;
+    margin-bottom: 20px;
 }
 
 .error {
@@ -266,64 +251,24 @@ def new_session_template(ai_provider_status: dict = None) -> str:
         </div>
         
         <div class="form-container">
-            <form id="newSessionForm">
-                <div class="form-group">
-                    <label for="approvalData">Approval Data (Base64 Format)</label>
-                    <textarea 
-                        id="approvalData" 
-                        name="approvalData" 
-                        placeholder="Enter approval data in base64 format..."
-                        required
-                    ></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="kilomarket-passcode">Passcode (4-8 digits for wallet reconstruction)</label>
-                    <input 
-                        type="number" 
-                        id="kilomarket-passcode" 
-                        name="kilomarket-passcode" 
-                        placeholder="Enter 4-8 digit passcode"
-                        pattern="[0-9]{4,8}"
-                        maxlength="8"
-                        required
-                    >
-                </div>
-                
-                {ai_provider_info}
-                
-                <div class="form-buttons">
-                    <button type="submit" class="btn">Create Session</button>
-                    <button type="button" class="btn" onclick="window.location.href='/interactive'">Cancel</button>
-                </div>
-                
-                <div id="message"></div>
-            </form>
+            {ai_provider_info}
+            
+            <div class="form-buttons">
+                <button type="button" id="createSessionBtn" class="btn">Create Session</button>
+                <button type="button" class="btn" onclick="window.location.href='/interactive'">Cancel</button>
+            </div>
+            
+            <div id="message"></div>
         </div>
         
         <div class="instructions">
-            Enter approval data and passcode • Escape to go back • <span class="blink">_</span>
+            Create new session • Escape to go back • <span class="blink">_</span>
         </div>
     """
     
     additional_js = f"""
-document.getElementById('newSessionForm').addEventListener('submit', async function(e) {{
-    e.preventDefault();
-    
-    const approvalData = document.getElementById('approvalData').value.trim();
-    const passcode = document.getElementById('kilomarket-passcode').value.trim();
+document.getElementById('createSessionBtn').addEventListener('click', async function() {{
     const messageDiv = document.getElementById('message');
-    
-    // Validation
-    if (!approvalData) {{
-        messageDiv.innerHTML = '<div class="error">Approval data is required</div>';
-        return;
-    }}
-    
-    if (!passcode || passcode.length < 4 || passcode.length > 8 || !/^\\d+$/.test(passcode)) {{
-        messageDiv.innerHTML = '<div class="error">Passcode must be 4-8 digits</div>';
-        return;
-    }}
     
     try {{
         messageDiv.innerHTML = '<div class="success">Creating session...</div>';
@@ -333,10 +278,7 @@ document.getElementById('newSessionForm').addEventListener('submit', async funct
             headers: {{
                 'Content-Type': 'application/json',
             }},
-            body: JSON.stringify({{
-                approval_data: approvalData,
-                passcode: passcode
-            }})
+            body: JSON.stringify({{}})
         }});
         
         const result = await response.json();
@@ -361,9 +303,9 @@ document.addEventListener('keydown', function(e) {{
     }}
 }});
 
-// Focus on approval data textarea
+// Focus on create button
 document.addEventListener('DOMContentLoaded', function() {{
-    document.getElementById('approvalData').focus();
+    document.getElementById('createSessionBtn').focus();
 }});
     """
     
@@ -383,15 +325,15 @@ def chat_session_template(session_id: str, session_data: dict, messages: list = 
             else:
                 time_str = ""
             
-            content = msg.get('content', '').replace('\n', '<br>');
-            msg_class = msg.get('role', 'user');
+            content = msg.get('content', '').replace('\n', '<br>')
+            msg_class = msg.get('role', 'user')
             
             preloaded_messages_html += f"""
                 <div class="message {msg_class}">
                     <span class="message-time">{time_str}:</span>
                     <span class="message-content">{content}</span>
                 </div>
-            """
+                """
     
     # Session info
     ai_provider_data = session_data.get('ai_provider', {})
@@ -529,12 +471,12 @@ def chat_session_template(session_id: str, session_data: dict, messages: list = 
 .typing-indicator {
     display: inline-block;
     animation: blink 1s infinite;
-}
+}}
 
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-}
+@keyframes blink {{
+    0%, 50% {{ opacity: 1; }}
+    51%, 100% {{ opacity: 0; }}
+}}
     """
     
     content = f"""
@@ -591,7 +533,7 @@ function addMessage(type, content, time = null) {{
     const timeStr = time || new Date().toLocaleTimeString();
     
     // Convert newlines to <br> for proper formatting
-    const formattedContent = content.replace(/\\n/g, '<br>');
+    const formattedContent = content.replace(/\\\\n/g, '<br>');
     
     messageDiv.innerHTML = `
         <span class="message-time">${{timeStr}}:</span>
@@ -606,7 +548,7 @@ function addMessage(type, content, time = null) {{
 function updateStreamingMessage(content) {{
     if (currentMessageElement) {{
         // Convert newlines to <br> for proper formatting during streaming
-        const formattedContent = content.replace(/\\n/g, '<br>');
+        const formattedContent = content.replace(/\\\\n/g, '<br>');
         currentMessageElement.querySelector('.message-content').innerHTML = formattedContent;
         const chatMessages = document.getElementById('chatMessages');
         chatMessages.scrollTop = chatMessages.scrollHeight;

@@ -272,6 +272,9 @@ class TerminalMenu {
             case 'ai-provider':
                 window.location.href = '/ai-provider';
                 break;
+            case 'wallet-settings':
+                window.location.href = '/wallet-settings';
+                break;
             case 'activity':
                 window.location.href = '/activity';
                 break;

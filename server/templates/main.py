@@ -5,7 +5,7 @@ Main menu templates for TradeArena Web Terminal
 from ..static import MENU_JS
 from .base import base_template, KILOMARKET_ASCII
 
-def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None) -> str:
+def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None, wallet_status: dict = None) -> str:
     """Main menu page template"""
     
     # Default A2A status if not provided
@@ -24,6 +24,16 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None)
             "configured": False,
             "provider": None,
             "provider_name": None,
+            "status_text": "Not Set"
+        }
+    
+    # Default wallet status if not provided
+    if wallet_status is None:
+        wallet_status = {
+            "configured": False,
+            "private_key": None,
+            "chain": None,
+            "chain_name": None,
             "status_text": "Not Set"
         }
     
@@ -48,6 +58,14 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None)
     else:
         ai_indicator = "disabled"
         ai_text = ai_provider_status.get('status_text', 'Not Set')
+    
+    # Determine wallet status indicator and text
+    if wallet_status.get("configured", False):
+        wallet_indicator = "online"
+        wallet_text = wallet_status.get('status_text', 'Wallet Configured')
+    else:
+        wallet_indicator = "disabled"
+        wallet_text = wallet_status.get('status_text', 'Not Set')
     
     # Add A2A menu item and server details only if not all servers are running
     a2a_menu_item = ""
@@ -102,8 +120,9 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None)
                     <div class="menu-item" data-action="ai-provider">
                         <span class="status-indicator {ai_indicator}"></span>AI Provider ({ai_text})
                     </div>
-                    <div class="menu-item" data-action="settings">
-                        <span class="status-indicator online"></span>Settings
+                    <div class="menu-item" data-action="wallet-settings">
+                        <span class="status-indicator {wallet_indicator}"></span>Wallet Settings ({wallet_text})
+                    </div>
                 </div>
             </div> 
         </div>

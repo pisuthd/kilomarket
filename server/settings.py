@@ -24,6 +24,9 @@ class SettingsManager:
         self._default_settings = {
             "ai_provider": {
                 "enabled": False
+            },
+            "wallet": {
+                "enabled": False
             }
         }
     
@@ -76,6 +79,22 @@ class SettingsManager:
         settings["ai_provider"] = ai_provider_config
         return self.save_settings(settings)
     
+    def is_wallet_enabled(self) -> bool:
+        """Check if wallet is enabled"""
+        settings = self.load_settings()
+        return settings.get("wallet", {}).get("enabled", False)
+    
+    def get_wallet_settings(self) -> Dict[str, Any]:
+        """Get wallet-specific settings"""
+        settings = self.load_settings()
+        return settings.get("wallet", self._default_settings["wallet"])
+    
+    def save_wallet_settings(self, wallet_config: Dict[str, Any]) -> bool:
+        """Save wallet-specific settings"""
+        settings = self.load_settings()
+        settings["wallet"] = wallet_config
+        return self.save_settings(settings)
+    
     def _clean_settings(self, settings: Dict[str, Any]) -> Dict[str, Any]:
         """Clean settings to only include valid fields"""
         clean_settings = self._default_settings.copy()
@@ -83,6 +102,12 @@ class SettingsManager:
         for key, value in settings.items():
             if key == "ai_provider":
                 # For AI provider settings, keep the structure but ensure valid fields
+                if isinstance(value, dict):
+                    clean_settings[key] = value
+                else:
+                    clean_settings[key] = self._default_settings[key]
+            elif key == "wallet":
+                # For wallet settings, keep the structure but ensure valid fields
                 if isinstance(value, dict):
                     clean_settings[key] = value
                 else:

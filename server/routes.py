@@ -15,9 +15,11 @@ from .templates import (
     main_page_template
 )
 from .templates.ai_provider import ai_provider_template
+from .templates.wallet_settings import wallet_settings_template
 from .templates.interactive import interactive_mode_template, new_session_template, chat_session_template
 from .a2a_server import get_a2a_manager
 from .ai_provider import ai_provider_manager
+from .wallet_settings import wallet_settings_manager
 from .sessions import session_manager
   
 
@@ -30,7 +32,8 @@ def setup_routes(app):
         a2a_manager = get_a2a_manager()
         a2a_status = a2a_manager.get_status()
         ai_provider_status = ai_provider_manager.get_provider_status()
-        return HTMLResponse(main_page_template(a2a_status, ai_provider_status))
+        wallet_status = wallet_settings_manager.get_wallet_status()
+        return HTMLResponse(main_page_template(a2a_status, ai_provider_status, wallet_status))
     
     @app.post("/toggle-a2a")
     async def toggle_a2a():
@@ -144,6 +147,85 @@ def setup_routes(app):
         from .ai_provider import AI_PROVIDERS
         return JSONResponse({"providers": AI_PROVIDERS})
     
+    # Wallet Settings Routes
+    @app.get("/wallet-settings")
+    async def wallet_settings_page():
+        """Wallet settings configuration page"""
+        current_wallet = wallet_settings_manager.get_wallet_status()
+        return HTMLResponse(wallet_settings_template(current_wallet))
+    
+    @app.get("/api/wallet-settings/status")
+    async def get_wallet_status():
+        """Get current wallet status"""
+        status = wallet_settings_manager.get_wallet_status()
+        return JSONResponse(status)
+    
+    @app.post("/api/wallet-settings/configure")
+    async def configure_wallet(request: Request):
+        """Configure wallet settings"""
+        try:
+            data = await request.json()
+            private_key = data.get("private_key")
+            chain = data.get("chain")
+            
+            if not private_key:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Private key is required"
+                })
+            
+            if not chain:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Chain is required"
+                })
+            
+            success = wallet_settings_manager.configure_wallet(private_key, chain)
+            
+            if success:
+                return JSONResponse({
+                    "success": True,
+                    "message": "Wallet configured successfully"
+                })
+            else:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Failed to configure wallet"
+                })
+        except Exception as e:
+            return JSONResponse({
+                "success": False,
+                "error": str(e)
+            })
+    
+    @app.post("/api/wallet-settings/clear")
+    async def clear_wallet():
+        """Clear wallet configuration"""
+        try:
+            success = wallet_settings_manager.clear_wallet()
+            
+            if success:
+                return JSONResponse({
+                    "success": True,
+                    "message": "Wallet configuration cleared"
+                })
+            else:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Failed to clear wallet configuration"
+                })
+        except Exception as e:
+            return JSONResponse({
+                "success": False,
+                "error": str(e)
+            })
+    
+    @app.get("/api/wallet-chains")
+    async def get_wallet_chains():
+        """Get available wallet chains"""
+        from .wallet_settings import WALLET_CHAINS
+        return JSONResponse({"chains": WALLET_CHAINS})
+    
     # Interactive Mode Routes
     @app.get("/interactive")
     async def interactive():
@@ -160,23 +242,6 @@ def setup_routes(app):
     async def create_session(request: Request):
         """Create new interactive session"""
         try:
-            data = await request.json()
-            approval_data = data.get("approval_data", "").strip()
-            passcode = data.get("passcode", "").strip()
-            
-            # Validation
-            if not approval_data:
-                return JSONResponse({
-                    "success": False,
-                    "error": "Approval data is required"
-                })
-            
-            if not passcode or not passcode.isdigit() or len(passcode) < 4 or len(passcode) > 8:
-                return JSONResponse({
-                    "success": False,
-                    "error": "Passcode must be 4-8 digits"
-                })
-            
             # Check if AI provider is configured
             ai_provider_config = ai_provider_manager.get_configured_provider()
             if not ai_provider_config:
@@ -185,10 +250,10 @@ def setup_routes(app):
                     "error": "AI Provider must be configured before creating a session"
                 })
             
-            # Create session
+            # Create session with minimal required data
             session_id = session_manager.create_session(
-                approval_data=approval_data,
-                passcode=passcode,
+                approval_data="",  # Empty approval data
+                passcode="0000",   # Default passcode
                 ai_provider=ai_provider_config
             )
             
@@ -397,4 +462,3 @@ def setup_routes(app):
         except Exception as e:
             logger.error(f"Error getting sessions: {e}")
             return {"sessions": [], "error": str(e)}
- 
