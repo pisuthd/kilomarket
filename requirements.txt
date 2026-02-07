@@ -5,5 +5,6 @@ strands-agents[anthropic]
 strands-agents[gemini]
 strands-agents[openai]
 strands-agents[a2a]
+strands-agents-tools[a2a_client]
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
