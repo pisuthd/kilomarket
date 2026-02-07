@@ -26,7 +26,7 @@ const YELLOW_CONFIG: any = {
     },
     CHAIN_ID: 11155111, // Sepolia
     CHALLENGE_DURATION: 3600n,
-    TOKEN: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // ytest.usd
+    TOKEN: '0xDB9F293e3898c9E5536A3be1b0C56c89d2b32DEb' // ytest.usd
 };
 
 interface ChannelInfo {
@@ -49,6 +49,7 @@ interface YellowClientState {
     account: any;
     publicClient: any;
     walletClient: any;
+    messageHandlers: Map<string, { resolve: Function; reject: Function; timeout: NodeJS.Timeout }>;
 }
 
 export class YellowNetworkClient {
@@ -65,7 +66,8 @@ export class YellowNetworkClient {
             channels: [],
             account: null,
             publicClient: null,
-            walletClient: null
+            walletClient: null,
+            messageHandlers: new Map()
         };
 
         this.initializeClients(walletPrivateKey);
@@ -118,6 +120,8 @@ export class YellowNetworkClient {
             this.state.ws = new WebSocket(YELLOW_CONFIG.WS_URL);
 
             this.state.ws.on('open', () => {
+                // Set up centralized message handler
+                this.state.ws!.on('message', this.handleWebSocketMessage.bind(this));
                 resolve();
             });
 
@@ -125,6 +129,53 @@ export class YellowNetworkClient {
                 console.error('WebSocket error:', err);
                 reject(err);
             });
+        });
+    }
+
+    private handleWebSocketMessage(data: any): void {
+        try {
+            const response = JSON.parse(data.toString());
+            // console.log('Received WS message:', JSON.stringify(response, null, 2));
+
+            // Handle error responses
+            if (response.error) {
+                // Check if any handler is waiting for this error
+                for (const [messageType, handler] of this.state.messageHandlers.entries()) {
+                    clearTimeout(handler.timeout);
+                    handler.reject(new Error(response.error.message || 'WebSocket operation failed'));
+                    this.state.messageHandlers.delete(messageType);
+                }
+                return;
+            }
+
+            // Handle response messages
+            if (response.res && response.res[1]) {
+                const messageType = response.res[1];
+                const handler = this.state.messageHandlers.get(messageType);
+                
+                if (handler) {
+                    clearTimeout(handler.timeout);
+                    handler.resolve(response);
+                    this.state.messageHandlers.delete(messageType);
+                }
+            }
+        } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+        }
+    }
+
+    private async sendAndWaitForResponse<T>(message: string, expectedMessageType: string, timeoutMs: number = 30000): Promise<T> {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.state.messageHandlers.delete(expectedMessageType);
+                reject(new Error(`${expectedMessageType} timeout`));
+            }, timeoutMs);
+
+            // Store the handler for this message type
+            this.state.messageHandlers.set(expectedMessageType, { resolve, reject, timeout });
+
+            // Send the message
+            this.state.ws!.send(message);
         });
     }
 
@@ -160,96 +211,51 @@ export class YellowNetworkClient {
         // Send auth request
         this.state.ws!.send(authRequestMsg);
 
-        // Wait for auth response
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Authentication timeout')), 30000);
+        // Wait for auth challenge
+        const challengeResponse = await this.sendAndWaitForResponse<any>(authRequestMsg, 'auth_challenge', 30000);
+        
+        // Handle auth challenge
+        const challenge = challengeResponse.res[2].challenge_message;
+        const signer = createEIP712AuthMessageSigner(
+            this.state.walletClient,
+            authParams,
+            { name: 'KiloMarket MCP' }
+        );
 
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Authentication failed'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'auth_challenge') {
-                    // Handle auth challenge
-                    const challenge = response.res[2].challenge_message;
-                    const signer = createEIP712AuthMessageSigner(
-                        this.state.walletClient,
-                        authParams,
-                        { name: 'KiloMarket MCP' }
-                    );
-
-                    createAuthVerifyMessageFromChallenge(signer, challenge)
-                        .then((verifyMsg: string) => {
-                            this.state.ws!.send(verifyMsg);
-                        })
-                        .catch(reject);
-                }
-
-                if (response.res && response.res[1] === 'auth_verify') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    this.state.isAuthenticated = true;
-                    resolve();
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
-        });
+        const verifyMsg = await createAuthVerifyMessageFromChallenge(signer, challenge);
+        
+        // Send verify message and wait for auth verify response
+        await this.sendAndWaitForResponse<any>(verifyMsg, 'auth_verify', 30000);
+        
+        this.state.isAuthenticated = true;
     }
 
     async listChannels(): Promise<ChannelInfo[]> {
-
         await this.authenticate();
 
-        // Send ledger balances request
+        // Send ledger balances request (this will return channels in the response)
         const ledgerMsg = await createGetLedgerBalancesMessage(
             this.state.sessionSigner,
             this.state.account.address,
             Date.now()
         );
 
-        this.state.ws!.send(ledgerMsg);
+        // Use centralized message handling to get ledger balances first
+        const response = await this.sendAndWaitForResponse<any>(ledgerMsg, 'channels', 10000);
+        
+        // Extract channels from the ledger balances response
+        const channels = response.res[2].channels || [];
+        const channelInfos: ChannelInfo[] = channels.map((channel: any) => ({
+            channel_id: channel.channel_id,
+            status: channel.status,
+            token: channel.token,
+            amount: channel.amount,
+            // balance: channel.balance,
+            created_at: channel.created_at
+        }));
 
-        // Wait for channels response
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('List channels timeout')), 30000);
-
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Failed to list channels'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'channels') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-
-                    const channels = response.res[2].channels || [];
-                    const channelInfos: ChannelInfo[] = channels.map((channel: any) => ({
-                        channel_id: channel.channel_id,
-                        status: channel.status,
-                        token: channel.token,
-                        amount: channel.amount,
-                        balance: channel.balance,
-                        created_at: channel.created_at
-                    }));
-
-                    this.state.channels = channelInfos;
-                    resolve(channelInfos);
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
-        });
+        this.state.channels = channelInfos;
+        return channelInfos;
     }
 
     async closeChannel(channelId?: string): Promise<string> {
@@ -273,51 +279,29 @@ export class YellowNetworkClient {
             this.state.account.address
         );
 
-        this.state.ws!.send(closeMsg);
+        // Use centralized message handling
+        const response = await this.sendAndWaitForResponse<any>(closeMsg, 'close_channel', 60000);
+        
+        const { channel_id, state, server_signature } = response.res[2];
 
-        // Wait for close response
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Close channel timeout')), 60000);
-
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Failed to close channel'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'close_channel') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-
-                    const { channel_id, state, server_signature } = response.res[2];
-
-                    // Submit close to blockchain
-                    this.state.client!.closeChannel({
-                        finalState: {
-                            intent: state.intent,
-                            version: BigInt(state.version),
-                            data: state.state_data || state.data,
-                            allocations: state.allocations.map((a: any) => ({
-                                destination: a.destination,
-                                token: a.token,
-                                amount: BigInt(a.amount),
-                            })),
-                            channelId: channel_id,
-                            serverSignature: server_signature,
-                        },
-                        stateData: state.state_data || state.data || '0x',
-                    }).then((txHash: string) => {
-                        resolve(txHash);
-                    }).catch(reject);
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
+        // Submit close to blockchain
+        const txHash = await this.state.client!.closeChannel({
+            finalState: {
+                intent: state.intent,
+                version: BigInt(state.version),
+                data: state.state_data || state.data,
+                allocations: state.allocations.map((a: any) => ({
+                    destination: a.destination,
+                    token: a.token,
+                    amount: BigInt(a.amount),
+                })),
+                channelId: channel_id,
+                serverSignature: server_signature,
+            },
+            stateData: state.state_data || state.data || '0x',
         });
+        
+        return txHash;
     }
 
     async createChannel(): Promise<string> {
@@ -332,53 +316,31 @@ export class YellowNetworkClient {
             }
         );
 
-        this.state.ws!.send(createMsg);
+        // Use centralized message handling
+        const response = await this.sendAndWaitForResponse<any>(createMsg, 'create_channel', 60000);
+        
+        const { channel_id, channel, state, server_signature } = response.res[2];
 
-        // Wait for create response
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Create channel timeout')), 60000);
+        // Submit to blockchain
+        const unsignedInitialState = {
+            intent: state.intent,
+            version: BigInt(state.version),
+            data: state.state_data,
+            allocations: state.allocations.map((a: any) => ({
+                destination: a.destination,
+                token: a.token,
+                amount: BigInt(a.amount),
+            })),
+        };
 
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Failed to create channel'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'create_channel') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-
-                    const { channel_id, channel, state, server_signature } = response.res[2];
-
-                    // Submit to blockchain
-                    const unsignedInitialState = {
-                        intent: state.intent,
-                        version: BigInt(state.version),
-                        data: state.state_data,
-                        allocations: state.allocations.map((a: any) => ({
-                            destination: a.destination,
-                            token: a.token,
-                            amount: BigInt(a.amount),
-                        })),
-                    };
-
-                    this.state.client!.createChannel({
-                        channel,
-                        unsignedInitialState,
-                        serverSignature: server_signature,
-                    }).then((result: any) => {
-                        const txHash = typeof result === 'string' ? result : result.txHash;
-                        resolve(txHash);
-                    }).catch(reject);
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
+        const result = await this.state.client!.createChannel({
+            channel,
+            unsignedInitialState,
+            serverSignature: server_signature,
         });
+        
+        const txHash = typeof result === 'string' ? result : result.txHash;
+        return txHash;
     }
 
     async transfer(destination: string, amount: string): Promise<void> {
@@ -399,31 +361,8 @@ export class YellowNetworkClient {
             Date.now()
         );
 
-        this.state.ws!.send(transferMsg);
-
-        // Wait for transfer confirmation
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Transfer timeout')), 30000);
-
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Transfer failed'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'transfer') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    resolve();
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
-        });
+        // Use centralized message handling
+        await this.sendAndWaitForResponse<any>(transferMsg, 'transfer', 10000);
     }
 
     async depositToCustody(amount: bigint, tokenAddress?: string): Promise<string> {
@@ -488,34 +427,10 @@ export class YellowNetworkClient {
             Date.now()
         );
 
-        this.state.ws!.send(ledgerMsg);
-
-        // Wait for ledger balances response
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Get ledger balances timeout')), 10000);
-
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Failed to get ledger balances'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'get_ledger_balances') {
-
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-
-                    const balances = response.res[2].ledger_balances || [];
-                    resolve(balances);
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
-        });
+        // Use centralized message handling
+        const response = await this.sendAndWaitForResponse<any>(ledgerMsg, 'get_ledger_balances', 10000);
+        const balances = response.res[2].ledger_balances || [];
+        return balances;
     }
 
     async resizeChannel(channelId: string, allocateAmount: bigint): Promise<string> {
@@ -531,77 +446,48 @@ export class YellowNetworkClient {
             }
         );
 
-        this.state.ws!.send(resizeMsg);
+        // Use centralized message handling
+        const response = await this.sendAndWaitForResponse<any>(resizeMsg, 'resize_channel', 60000);
+        
+        const { channel_id, state, server_signature } = response.res[2];
 
-        // Wait for resize confirmation
-        return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Resize channel timeout')), 60000);
+        // Construct the resize state object expected by the SDK
+        const resizeState = {
+            intent: state.intent,
+            version: BigInt(state.version),
+            data: state.state_data || state.data,
+            allocations: state.allocations.map((a: any) => ({
+                destination: a.destination,
+                token: a.token,
+                amount: BigInt(a.amount),
+            })),
+            channelId: channel_id,
+            serverSignature: server_signature,
+        };
 
-            const messageHandler = (data: any) => {
-                const response = JSON.parse(data.toString());
-
-                if (response.error) {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-                    reject(new Error(response.error.message || 'Failed to resize channel'));
-                    return;
-                }
-
-                if (response.res && response.res[1] === 'resize_channel') {
-                    clearTimeout(timeout);
-                    this.state.ws!.removeListener('message', messageHandler);
-
-                    const { channel_id, state, server_signature } = response.res[2];
-
-                    // Construct the resize state object expected by the SDK
-                    const resizeState = {
-                        intent: state.intent,
-                        version: BigInt(state.version),
-                        data: state.state_data || state.data,
-                        allocations: state.allocations.map((a: any) => ({
-                            destination: a.destination,
-                            token: a.token,
-                            amount: BigInt(a.amount),
-                        })),
-                        channelId: channel_id,
-                        serverSignature: server_signature,
-                    };
-
-                    // Get proof states if needed
-                    let proofStates: any[] = [];
-                    this.state.client!.getChannelData(channel_id as `0x${string}`)
-                        .then((onChainData: any) => {
-                            if (onChainData.lastValidState) {
-                                proofStates = [onChainData.lastValidState];
-                            }
-                            
-                            // Submit resize to blockchain
-                            return this.state.client!.resizeChannel({
-                                resizeState,
-                                proofStates: proofStates,
-                            });
-                        })
-                        .then((result: any) => {
-                            const txHash = typeof result === 'string' ? result : result.txHash;
-                            resolve(txHash);
-                        })
-                        .catch((error: any) => {
-                            // Try without proof states if it failed
-                            return this.state.client!.resizeChannel({
-                                resizeState,
-                                proofStates: [],
-                            });
-                        })
-                        .then((result: any) => {
-                            const txHash = typeof result === 'string' ? result : result.txHash;
-                            resolve(txHash);
-                        })
-                        .catch(reject);
-                }
-            };
-
-            this.state.ws!.on('message', messageHandler);
-        });
+        // Get proof states if needed
+        try {
+            const onChainData = await this.state.client!.getChannelData(channel_id as `0x${string}`);
+            const proofStates = onChainData.lastValidState ? [onChainData.lastValidState] : [];
+            
+            // Submit resize to blockchain
+            const result = await this.state.client!.resizeChannel({
+                resizeState,
+                proofStates: proofStates,
+            });
+            
+            const txHash = typeof result === 'string' ? result : result.txHash;
+            return txHash;
+        } catch (error: any) {
+            // Try without proof states if it failed
+            const result = await this.state.client!.resizeChannel({
+                resizeState,
+                proofStates: [],
+            });
+            
+            const txHash = typeof result === 'string' ? result : result.txHash;
+            return txHash;
+        }
     }
 
     disconnect(): void {
