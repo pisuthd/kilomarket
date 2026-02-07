@@ -21,6 +21,7 @@ from .a2a_server import get_a2a_manager
 from .ai_provider import ai_provider_manager
 from .wallet_settings import wallet_settings_manager
 from .sessions import session_manager
+from .mcp_manager import mcp_manager
   
 
 def setup_routes(app):
@@ -248,6 +249,21 @@ def setup_routes(app):
                 return JSONResponse({
                     "success": False,
                     "error": "AI Provider must be configured before creating a session"
+                })
+            
+            # Check wallet configuration for MCP functionality
+            wallet_config = wallet_settings_manager.get_configured_wallet()
+            if not wallet_config:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Wallet must be configured for Ethereum functionality"
+                })
+            
+            # Validate wallet chain for MCP support
+            if wallet_config.get("chain") != "ethereum_sepolia":
+                return JSONResponse({
+                    "success": False,
+                    "error": "Only Ethereum Sepolia is supported for MCP tools"
                 })
             
             # Create session with minimal required data

@@ -33,6 +33,9 @@ except ImportError as e:
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Global registry for MCP clients (to avoid JSON serialization issues)
+_mcp_client_registry = {}
+
 def create_conversation_manager() -> SlidingWindowConversationManager:
     """Create conversation manager with fixed settings for all agents"""
     if not STRANDS_AVAILABLE:
@@ -44,16 +47,23 @@ def create_conversation_manager() -> SlidingWindowConversationManager:
     )
 
 def get_kilomarket_system_prompt() -> str:
-    """Get the KiloMarket System Prompt"""
+    """Get KiloMarket System Prompt"""
     
-    system_prompt = """You are KiloMarket Interactive Agent, a specialized AI assistant for cryptocurrency and DeFi interactions.
+    system_prompt = """You are KiloMarket Interactive Agent, a specialized AI assistant for cryptocurrency and DeFi interactions on Ethereum Sepolia.
 
 Core Responsibilities:
 - Provide intelligent analysis and insights
 - Assist with market data interpretation
 - Help with DeFi protocol interactions
 - Guide users through complex blockchain operations
+- Execute wallet operations using available Ethereum tools
 - Ensure security and best practices
+
+Available Ethereum Tools:
+- Wallet information and balance checking
+- Native ETH transfers
+- ERC20 token operations (send, approve, check allowances)
+- Transaction monitoring and verification
 
 Important Guidelines:
 - Always prioritize security and user safety
@@ -62,12 +72,15 @@ Important Guidelines:
 - Ask for clarification when needed
 - Never share sensitive information like private keys or passcodes
 - Never request or display user approval data in responses
+- Use available Ethereum tools for blockchain operations
+- Verify transaction details before execution
 
 Communication Style:
 - Be helpful and educational
 - Use clear, concise language
 - Provide step-by-step guidance when needed
 - Explain risks and benefits clearly
+- Show transaction details and confirmations when using blockchain tools
 
 Always provide reasoning and use markdown for clear communication."""
 
@@ -115,6 +128,21 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         }
     }
     
+    # Get MCP tools for Ethereum Sepolia
+    additional_tools = []
+    try:
+        from .mcp_manager import mcp_manager
+        mcp_tools, persistent_clients = mcp_manager.get_mcp_tools("ethereum_sepolia")
+        additional_tools.extend(mcp_tools)
+        
+        # Store MCP client references for cleanup (but not in agent state to avoid JSON serialization issues)
+        # We'll store them in a separate global registry
+        _mcp_client_registry[session_id] = persistent_clients
+        logger.info(f"Loaded {len(mcp_tools)} MCP tools for Ethereum Sepolia")
+    except Exception as e:
+        logger.warning(f"Failed to load MCP tools: {e}")
+        _mcp_client_registry[session_id] = {}
+    
     # Initialize agent based on provider
     if ai_provider == "anthropic":
         api_key = config.get('api_key')
@@ -134,7 +162,7 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         kilomarket_agent = Agent(
             name="kilomarket_interactive_agent",
             agent_id=f"kilomarket_agent_{session_id}",
-            tools=[],  # No additional tools for interactive mode
+            tools=additional_tools,  # Include MCP tools
             model=model,
             session_manager=strands_session_manager,
             conversation_manager=conversation_manager,
@@ -173,7 +201,7 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         kilomarket_agent = Agent(
             name="kilomarket_interactive_agent",
             agent_id=f"kilomarket_agent_{session_id}",
-            tools=[],  # No additional tools for interactive mode
+            tools=additional_tools,  # Include MCP tools
             model=model,
             session_manager=strands_session_manager,
             conversation_manager=conversation_manager,
@@ -198,7 +226,7 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         kilomarket_agent = Agent(
             name="kilomarket_interactive_agent",
             agent_id=f"kilomarket_agent_{session_id}",
-            tools=[],  # No additional tools for interactive mode
+            tools=additional_tools,  # Include MCP tools
             model=model,
             session_manager=strands_session_manager,
             conversation_manager=conversation_manager,
@@ -236,7 +264,7 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         kilomarket_agent = Agent(
             name="kilomarket_interactive_agent",
             agent_id=f"kilomarket_agent_{session_id}",
-            tools=[],  # No additional tools for interactive mode
+            tools=additional_tools,  # Include MCP tools
             model=model,
             session_manager=strands_session_manager,
             conversation_manager=conversation_manager,
@@ -254,6 +282,29 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
 def cleanup_agent_resources(agent_instance: Agent):
     """Clean up resources associated with an agent"""
     try:
+        # Get session ID from agent state
+        session_id = None
+        if hasattr(agent_instance, 'state') and 'session_config' in agent_instance.state:
+            session_id = agent_instance.state['session_config'].get('session_id')
+        
+        # Clean up MCP clients from global registry
+        if session_id and session_id in _mcp_client_registry:
+            try:
+                mcp_clients = _mcp_client_registry[session_id]
+                for client_name, (client, session) in mcp_clients.items():
+                    try:
+                        client.__exit__(None, None, None)
+                        logger.info(f"Cleaned up MCP client: {client_name}")
+                    except Exception as e:
+                        logger.error(f"Error cleaning up MCP client {client_name}: {e}")
+                
+                # Remove from registry
+                del _mcp_client_registry[session_id]
+                logger.info("MCP clients cleaned up successfully")
+            except Exception as e:
+                logger.error(f"Error during MCP cleanup: {e}")
+        
+        # Clean up agent resources
         if hasattr(agent_instance, 'cleanup'):
             agent_instance.cleanup()
         elif hasattr(agent_instance, 'close'):
