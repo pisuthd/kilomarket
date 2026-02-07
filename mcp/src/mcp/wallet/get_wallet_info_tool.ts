@@ -12,12 +12,15 @@ export const GetWalletInfoTool: McpTool = {
             .default(true)
             .describe("Include token balances for known tokens")
     },
-    handler: async (agent: EthereumWalletAgent, input: Record<string, any>) => {
+    handler: async (agent: any, input: Record<string, any>) => {
         try {
             const { include_tokens = true } = input;
 
+            // Create wallet agent instance
+            const walletAgent = new EthereumWalletAgent();
+
             // Get wallet info using the agent method
-            const walletInfo = await agent.getWalletInfo();
+            const walletInfo = await walletAgent.getWalletInfo();
 
             // If include_tokens is false, remove tokens from the response
             if (!include_tokens) {

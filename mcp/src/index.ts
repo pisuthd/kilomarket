@@ -7,19 +7,20 @@ import { EthereumTools } from "./mcp";
 function createEthereumMcpServer(agent: Agent) {
     // Create MCP server instance
     const server = new McpServer({
-        name: "kilomarket-ethereum-mcp",
+        name: "kilomarket-mcp",
         version: "1.0.0"
     });
 
     // Combine all tools
     const allTools = EthereumTools;
 
+
     // Register all tools
     for (const [toolKey, tool] of Object.entries(allTools)) {
         server.tool(tool.name, tool.description, tool.schema, async (params: any): Promise<any> => {
             try {
-                // Execute the handler with the agent's wallet and params
-                const result = await tool.handler(agent.getWallet(), params);
+                // Execute the handler with the agent and params
+                const result = await tool.handler(agent, params);
 
                 // Format the result as MCP tool response
                 return {
