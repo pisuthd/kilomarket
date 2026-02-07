@@ -22,7 +22,7 @@ export const checkBalanceTool: McpTool = {
       const walletPrivateKey = config.privateKey;
       const args = input;
       const decimals = args.decimals || 6;
-      const tokenAddress = args.token_address || '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+      const tokenAddress = args.token_address || '0xDB9F293e3898c9E5536A3be1b0C56c89d2b32DEb';
       
       const client = new YellowNetworkClient(walletPrivateKey);
       
