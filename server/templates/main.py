@@ -90,19 +90,27 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None,
                     </div>
                     {server_details}"""
     
+    # Add interactive mode menu item only if A2A servers are running
+    interactive_menu_item = ""
+    if a2a_status.get("any_running", False):
+        interactive_menu_item = """
+                    <div class="menu-item" data-action="interactive">
+                        <span class="status-indicator online"></span>Interactive Mode
+                    </div>"""
+    
     # Determine dynamic message based on A2A server status
     if a2a_status.get("all_running", False):
         instruction_message = "Connect your agent to A2A servers or try interactive mode below"
     elif a2a_status.get("any_running", False):
         instruction_message = "Connect your agent to A2A servers or try interactive mode below"
     else:
-        instruction_message = "Enable A2A servers first"
+        instruction_message = "Enable A2A servers first to get started"
     
     content = f"""
         <div class="terminal-header">
             <div class="ascii-art">{KILOMARKET_ASCII}</div>
-            <div class="title">Agent-to-Agent Marketplace</div>
-            <div class="subtitle">Discovery (A2A) · Execution (x402) · AA Wallet (ZeroDev) · Strands Agents (Orchestration)</div>
+            <div class="title">Agent Terminal v.0.1</div>
+            <div class="subtitle">Agent-to-Agent Economy powered by MCP + A2A + Yellow instant payment channels</div>
             <div class="subtitle-2">{instruction_message}</div>
         </div>
         
@@ -110,9 +118,7 @@ def main_page_template(a2a_status: dict = None, ai_provider_status: dict = None,
             <div class="menu">
                 <div class="menu-header">Main Menu</div> 
                 <div id="menuItems">
-                    <div class="menu-item" data-action="interactive">
-                        <span class="status-indicator online"></span>Interactive Mode
-                    </div> 
+                    {interactive_menu_item}
                     {a2a_menu_item}
                     <div class="menu-item" data-action="markets">
                         <span class="status-indicator online"></span>Explore Markets

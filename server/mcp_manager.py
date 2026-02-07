@@ -12,12 +12,14 @@ from contextlib import contextmanager
 try:
     from strands.tools.mcp import MCPClient
     from mcp import stdio_client, StdioServerParameters
+    from strands_tools.a2a_client import A2AClientToolProvider
     STRANDS_AVAILABLE = True
 except ImportError:
     STRANDS_AVAILABLE = False
     MCPClient = None
     stdio_client = None
     StdioServerParameters = None
+    A2AClientToolProvider = None
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +161,43 @@ class MCPManager:
         
         return persistent_clients
     
-    def get_mcp_tools(self, trading_chain: str) -> Tuple[List[Any], Dict[str, Tuple[MCPClient, Any]]]:
+    def get_a2a_client_tools(self, a2a_status: dict) -> List[Any]:
+        """Get A2A client tools for running servers"""
+        if not STRANDS_AVAILABLE or A2AClientToolProvider is None:
+            logger.warning("A2AClientToolProvider not available - no A2A tools")
+            return []
+        
+        a2a_tools = []
+        
+        try:
+            for server in a2a_status.get("servers", []):
+                if server.get("running", False):
+                    port = server.get("port")
+                    agent_name = server.get("agent_name", f"Agent-{port}")
+                    
+                    try:
+                        # Create A2A client provider for this specific server
+                        provider = A2AClientToolProvider(
+                            known_agent_urls=[f"http://127.0.0.1:{port}"]
+                        )
+                        
+                        # Get tools from this provider
+                        server_tools = provider.tools
+                        a2a_tools.extend(server_tools)
+                        
+                        logger.info(f"Loaded {len(server_tools)} A2A tools from {agent_name} (port {port})")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to load A2A tools from {agent_name} (port {port}): {e}")
+            
+            logger.info(f"Total A2A tools loaded: {len(a2a_tools)}")
+            
+        except Exception as e:
+            logger.error(f"Error collecting A2A tools: {e}")
+        
+        return a2a_tools
+    
+    def get_mcp_tools(self, trading_chain: str, a2a_status: dict = None) -> Tuple[List[Any], Dict[str, Tuple[MCPClient, Any]]]:
         """Get all tools for a specific trading chain and return persistent clients"""
         if not STRANDS_AVAILABLE:
             logger.warning("StrandsAgents not available - no MCP tools available")
@@ -169,6 +207,7 @@ class MCPManager:
         persistent_clients = self.initialize_mcp_clients(trading_chain)
         all_tools = []
         
+        # Get MCP tools
         for mcp_name, (client, session) in persistent_clients.items():
             try:
                 # Extract tools from the persistent session
@@ -177,6 +216,12 @@ class MCPManager:
                 logger.info(f"Successfully collected {len(tools)} tools from {mcp_name}")
             except Exception as e:
                 logger.error(f"Failed to get tools from {mcp_name}: {e}")
+        
+        # Get A2A tools if status is provided
+        if a2a_status:
+            a2a_tools = self.get_a2a_client_tools(a2a_status)
+            all_tools.extend(a2a_tools)
+            logger.info(f"Added {len(a2a_tools)} A2A tools to tool collection")
         
         return all_tools, persistent_clients
     

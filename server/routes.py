@@ -367,8 +367,13 @@ def setup_routes(app):
             # Initialize StrandsAgents agent
             try:
                 from .agent_utils import initialize_strands_agent
+                
+                # Get A2A status for agent initialization
+                a2a_manager = get_a2a_manager()
+                a2a_status = a2a_manager.get_status()
+                
                 agent_instance, agent_session_id = initialize_strands_agent(
-                    session_data, session_id, strands_session_manager
+                    session_data, session_id, strands_session_manager, a2a_status
                 )
             except ImportError as e:
                 logger.error(f"StrandsAgents not available: {e}")

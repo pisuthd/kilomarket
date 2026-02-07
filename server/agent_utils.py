@@ -46,10 +46,10 @@ def create_conversation_manager() -> SlidingWindowConversationManager:
         should_truncate_results=True  # Fixed truncation setting
     )
 
-def get_kilomarket_system_prompt() -> str:
+def get_kilomarket_system_prompt(a2a_available: bool = False) -> str:
     """Get KiloMarket System Prompt"""
     
-    system_prompt = """You are KiloMarket Interactive Agent, a specialized AI assistant for cryptocurrency and DeFi interactions on Ethereum Sepolia.
+    base_prompt = """You are KiloMarket Interactive Agent, a specialized AI assistant for cryptocurrency and DeFi interactions on Ethereum Sepolia.
 
 Core Responsibilities:
 - Provide intelligent analysis and insights
@@ -63,7 +63,24 @@ Available Ethereum Tools:
 - Wallet information and balance checking
 - Native ETH transfers
 - ERC20 token operations (send, approve, check allowances)
-- Transaction monitoring and verification
+- Transaction monitoring and verification"""
+
+    if a2a_available:
+        base_prompt += """
+
+A2A Agent-to-Agent Capabilities:
+- Access calculator agent for mathematical operations
+- Access utility agent for echo, time, and information services
+- Access info agent for help and general assistance
+
+A2A Tools Available:
+- Tools to interact with Calculator Agent (port 9000)
+- Tools to interact with Utility Agent (port 9001) 
+- Tools to interact with Info Agent (port 9002)
+
+Simply tell me what you want to do with these A2A-connected agents and I'll facilitate the interaction."""
+
+    base_prompt += """
 
 Important Guidelines:
 - Always prioritize security and user safety
@@ -84,9 +101,9 @@ Communication Style:
 
 Always provide reasoning and use markdown for clear communication."""
 
-    return system_prompt
+    return base_prompt
 
-def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, strands_session_manager) -> tuple[Agent, str]:
+def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, strands_session_manager, a2a_status: dict = None) -> tuple[Agent, str]:
     """Initialize a Strands agent with the given configuration"""
     if not STRANDS_AVAILABLE:
         raise ImportError("StrandsAgents SDK is not available. Please install strands-agents package.")
@@ -102,8 +119,11 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
     if not ai_provider or not config:
         raise ValueError("AI provider not configured properly in session data")
     
-    # Get the KiloMarket System Prompt
-    system_prompt = get_kilomarket_system_prompt()
+    # Check if A2A is available
+    a2a_available = a2a_status is not None and a2a_status.get("any_running", False) if a2a_status else False
+    
+    # Get the KiloMarket System Prompt with A2A awareness
+    system_prompt = get_kilomarket_system_prompt(a2a_available=a2a_available)
     
     # Setup logging for this specific agent
     agent_logger = logging.getLogger(f"strands.{session_id}")
@@ -128,17 +148,21 @@ def initialize_strands_agent(session_data: Dict[str, Any], session_id: str, stra
         }
     }
     
-    # Get MCP tools for Ethereum Sepolia
+    # Get MCP tools for Ethereum Sepolia (including A2A tools if available)
     additional_tools = []
     try:
         from .mcp_manager import mcp_manager
-        mcp_tools, persistent_clients = mcp_manager.get_mcp_tools("ethereum_sepolia")
+        mcp_tools, persistent_clients = mcp_manager.get_mcp_tools("ethereum_sepolia", a2a_status)
         additional_tools.extend(mcp_tools)
         
         # Store MCP client references for cleanup (but not in agent state to avoid JSON serialization issues)
         # We'll store them in a separate global registry
         _mcp_client_registry[session_id] = persistent_clients
-        logger.info(f"Loaded {len(mcp_tools)} MCP tools for Ethereum Sepolia")
+        
+        # Log tool counts
+        mcp_count = len(mcp_tools)
+        a2a_count = len([t for t in mcp_tools if hasattr(t, 'name') and 'a2a' in str(t.name).lower()]) if a2a_status else 0
+        logger.info(f"Loaded {mcp_count} total tools for Ethereum Sepolia (including {a2a_count} A2A tools)")
     except Exception as e:
         logger.warning(f"Failed to load MCP tools: {e}")
         _mcp_client_registry[session_id] = {}
