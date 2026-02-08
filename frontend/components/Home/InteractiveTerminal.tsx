@@ -210,23 +210,23 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                     '',
                                     '💼 Available AI Providers on KiloMarket:',
                                     '┌─────────────────────────────────────┐',
-                                    '│ 1️⃣ kilo-provider-1 - 0.02 QUI / call│',
+                                    '│ 1️⃣ crypto-data-agent - 0.02 yUSD/call│',
                                     '│    • Model: LLaMA-3.1-8B            │',
                                     '│    • Avg latency: 420ms             │',
-                                    '│    • Real-time data processing      │',
+                                    '│    • Real-time crypto data          │',
                                     '│                                     │',
-                                    '│ 2️⃣ kilo-provider-2 - 0.05 DOL / call│',
+                                    '│ 2️⃣ defi-analytics - 0.05 yUSD / call│',
                                     '│    • Model: Mixtral-8x7B            │',
-                                    '│    • Advanced reasoning             │',
+                                    '│    • Advanced DeFi reasoning        │',
                                     '│    • Cost-effective                 │',
                                     '│                                     │',
-                                    '│ 3️⃣ kilo-provider-3 - 0.01 CON / call│',
-                                    '│    • Model: Custom ZK-Verified      │',
+                                    '│ 3️⃣ market-oracle - 0.01 yUSD / call│',
+                                    '│    • Model: Custom Fine-tuned       │',
                                     '│    • Fast response times            │',
-                                    '│    • Multi-modal capabilities       │',
+                                    '│    • Multi-chain data               │',
                                     '└─────────────────────────────────────┘',
                                     '',
-                                    '💳 Checking your account credits...'
+                                    '💳 Checking payment channel balance...'
                                 ]
                             }));
                             break;
@@ -237,10 +237,10 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                 messages: [
                                     ...prev.messages,
                                     '🎯 Auto-selecting optimal provider...',
-                                    '✅ Selected: LLaMA-3.1-8B (Best value - Fast response + Multi-modal)',
+                                    '✅ Selected: crypto-data-agent (Best value + Real-time data)',
                                     '',
-                                    '💰 Required: 0.02 QUI per query',
-                                    '💳 Checking your account credits...'
+                                    '💰 Required: 0.02 yUSD per query',
+                                    '💳 Checking payment channel balance...'
                                 ]
                             }));
                             break;
@@ -250,12 +250,12 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                 ...prev, 
                                 messages: [
                                     ...prev.messages,
-                                    '⚠️  Insufficient credits for LLaMA-3.1-8B',
+                                    '⚠️  Insufficient balance in payment channel',
                                     '',
-                                    '💰 Required: 0.02 QUI per query',
-                                    '🔒 Payment Method: x402 Protocol',
+                                    '💰 Required: 0.02 yUSD per query',
+                                    '🔒 Payment Method: Yellow Network State Channel',
                                     '',
-                                    'Processing payment automatically...'
+                                    'Topping up payment channel automatically...'
                                 ],
                                 processing: true
                             }));
@@ -266,12 +266,13 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                 ...prev, 
                                 messages: [
                                     ...prev.messages,
-                                    '⏳ Processing x402 payment...',
-                                    '✅ Payment successful! Transaction: 0x7f9a...2b3c',
+                                    '⏳ Opening payment channel...',
+                                    '✅ Channel funded! Channel ID: 0x7f9a...2b3c',
                                     '⛽ Gas Fee: 0.0001 ETH',
                                     '⏱️ Confirmed in 2.3s',
+                                    '💰 Channel balance: 1.0 yUSD',
                                     '',
-                                    '🤖 Connecting to LLaMA-3.1-8B...'
+                                    '🤖 Connecting to crypto-data-agent...'
                                 ]
                             }));
                             break;
@@ -281,8 +282,8 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                                 ...prev, 
                                 messages: [
                                     ...prev.messages,
-                                    '📊 LLaMA-3.1-8B initialized',
-                                    '💰 Credits: 0.01 ETH available',
+                                    '📊 crypto-data-agent initialized',
+                                    '💰 Payment channel balance: 0.98 yUSD available',
                                     ''
                                 ],
                                 processing: true
@@ -419,7 +420,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                 <p className="mt-2">Features:</p>
                 <ul className="ml-4 mt-1 space-y-1">
                     <li>• Agent-to-Agent marketplace</li>
-                    <li>• x402 protocol payments</li>
+                    <li>• Yellow Network state channels</li>
                     <li>• Real-time service execution</li>
                     <li>• Uniswap v4 hooks integration</li>
                     <li>• On-chain verification</li>
@@ -455,7 +456,7 @@ const InteractiveTerminal = ({ autoStart = false, embedded = false }: { autoStar
                             whileInView={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
                         >
-                            Watch how AI agents discover, trade, and monetize services autonomously with x402 payments.
+                            Watch how AI agents discover, trade, and monetize services autonomously with Yellow Network state channels.
                         </motion.p>
                     </motion.div>
                 )}
