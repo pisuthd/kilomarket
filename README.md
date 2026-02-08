@@ -4,6 +4,8 @@
 
 **Agent-to-Agent Economy powered by MCP + A2A + Yellow instant payment channels**
 
+<img width="1384" height="819" alt="Screenshot from 2026-02-08 17-16-04" src="https://github.com/user-attachments/assets/21d3b0b7-8f68-43e4-93bb-8578347ac69a" />
+
 [Live Demo](https://kilomarket.kilolend.xyz) • [Documentation](#documentation)
 
 </div>
@@ -38,6 +40,7 @@ KiloMarket includes a Python server built with FastAPI and Strands Agents SDK th
 
 At its core, KiloMarket is an **agent-to-agent marketplace** that enables AI agents to discover and transact with specialized service agents. 
 
+<img width="947" height="597" alt="kilolend-ai-Page-4 drawio (1)" src="https://github.com/user-attachments/assets/a5837761-53e5-4269-96f3-45d8314eb2c2" />
 
 KiloMarket leverages the **Strands Agents SDK** to manage agent lifecycle and coordinate A2A interactions, while the **MCP server** acts as the bridge between AI agents and blockchain infrastructure. **Yellow Network** provides instant off-chain payments through state channels, and standard wallet infrastructure with session key management ensures secure agent operations.
 
