@@ -9,6 +9,6 @@ package-mode = false
 python = "^3.11"
 fastapi = "^0.122.0"
 uvicorn = {extras = ["standard"], version = "^0.38.0"}
-strands-agents = {extras = ["anthropic", "gemini", "openai"], version = "^1.18.0"}
-strands-agents-tools = "^0.2.0"
+strands-agents = {extras = ["anthropic", "gemini", "openai", "a2a"], version = "^1.18.0"}
+strands-agents-tools = {extras = ["a2a_client"], version = "^0.2.0"}
 boto3 = "^1.41.0"

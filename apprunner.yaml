@@ -1,0 +1,37 @@
+version: 1.0
+runtime: python311
+build:
+  commands:
+    build:
+      - echo "Build command..."
+
+run:
+  runtime-version: 3.11
+  pre-run:
+    - echo "Installing Python dependencies..."
+    - pip3 install poetry
+    - poetry config virtualenvs.create false
+    - poetry install
+    
+    # --- Install Node.js 22 for Amazon Linux ---
+    - echo "Installing Node.js 22..."
+    - curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+    - yum install -y nodejs
+    
+    # --- Build MCP Servers Sequentially ---
+    - echo "Building core-mcp..."
+    - cd mcp && npm install --legacy-peer-deps && npm run build && cd ..
+    
+    # Verify installations
+    - echo "Verifying installations..."
+    - python3 --version
+    - node -v
+    - npm -v
+    - npx --version
+    - echo "Verifying MCP builds..."
+    - ls -la mcp/dist/
+    
+  command: python3 main.py
+  network: 
+    port: 8000
+    env: PORT
