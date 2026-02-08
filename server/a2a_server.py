@@ -1,6 +1,6 @@
 """
 A2A Server Management for KiloMarket
-Handles multiple Agent-to-Agent servers with fixed ports
+Handles multiple Agent-to-Agent servers with specialized service agents
 """
 
 import logging
@@ -10,7 +10,9 @@ import socket
 from typing import Optional, Dict, Any, List
 from strands import Agent
 from strands.multiagent.a2a import A2AServer
-from strands_tools.calculator import calculator
+
+# Import specialized agents
+from agents import AgentRegistry, VibeCodingAgent, CryptoMarketAgent, ContractAuditAgent
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,12 +21,15 @@ logger = logging.getLogger(__name__)
 class A2AServerInstance:
     """Individual A2A server instance"""
     
-    def __init__(self, port: int, agent_name: str, agent_description: str, tools: list, host: str = "0.0.0.0"):
+    def __init__(self, port: int, agent_name: str, agent_description: str, tools: list, host: str = "0.0.0.0", 
+                 wallet_address: str = None, agent_instance = None):
         self.port = port
         self.host = host
         self.agent_name = agent_name
         self.agent_description = agent_description
         self.tools = tools
+        self.wallet_address = wallet_address
+        self.agent_instance = agent_instance
         
         self.server: Optional[A2AServer] = None
         self.agent: Optional[Agent] = None
@@ -35,12 +40,17 @@ class A2AServerInstance:
     
     def create_agent(self) -> Agent:
         """Create the agent for this server"""
-        return Agent(
-            name=self.agent_name,
-            description=self.agent_description,
-            tools=self.tools,
-            callback_handler=None
-        )
+        # Use the specialized agent instance if available, otherwise create a generic agent
+        if self.agent_instance:
+            return self.agent_instance.create_agent()
+        else:
+            # Fallback to generic agent creation
+            return Agent(
+                name=self.agent_name,
+                description=self.agent_description,
+                tools=self.tools,
+                callback_handler=None
+            )
     
     def start(self) -> tuple[bool, str]:
         """Start this server instance"""
@@ -119,7 +129,7 @@ class A2AServerInstance:
             if self.start_time:
                 uptime = time.time() - self.start_time
             
-            return {
+            status = {
                 "running": self.running,
                 "host": self.host,
                 "port": self.port,
@@ -127,6 +137,42 @@ class A2AServerInstance:
                 "uptime_seconds": uptime,
                 "server_url": f"http://{self.host}:{self.port}" if self.running else None
             }
+            
+            # Add wallet information if available
+            if self.wallet_address:
+                status["wallet_address"] = self.wallet_address
+                status["has_wallet"] = True
+            else:
+                status["wallet_address"] = None
+                status["has_wallet"] = False
+            
+            # Add agent capabilities if available
+            if self.agent_instance and hasattr(self.agent_instance, 'get_capabilities'):
+                try:
+                    capabilities = self.agent_instance.get_capabilities()
+                    status["capabilities"] = capabilities
+                    status["service_cost"] = capabilities.get("pricing", {}).get("base_cost", 0.75)
+                    status["business_model"] = capabilities.get("business_model", "Service")
+                    
+                    # Add model information if available
+                    if hasattr(self.agent_instance, 'model'):
+                        model_info = self.agent_instance.model
+                        if hasattr(model_info, 'config'):
+                            status["model"] = model_info.config.get("model_id", "Unknown")
+                        elif isinstance(model_info, str):
+                            status["model"] = model_info
+                        else:
+                            status["model"] = str(model_info)
+                    elif "model" in capabilities:
+                        status["model"] = capabilities["model"]
+                    else:
+                        status["model"] = "Unknown"
+                        
+                except Exception as e:
+                    logger.error(f"Error getting capabilities for {self.agent_name}: {e}")
+                    status["model"] = "Unknown"
+            
+            return status
     
     def _is_port_available(self, port: int) -> bool:
         """Check if a specific port is available"""
@@ -166,32 +212,93 @@ class MultiA2AServerManager:
         self._setup_servers()
     
     def _setup_servers(self):
-        """Set up the three A2A servers"""
-        # Server 1: Calculator (port 9000)
-        calc_server = A2AServerInstance(
+        """Set up three specialized A2A servers"""
+        try:
+            # Initialize specialized agents
+            agent_registry = AgentRegistry()
+            vibe_coding = VibeCodingAgent()
+            crypto_market = CryptoMarketAgent()
+            contract_audit = ContractAuditAgent()
+            
+            # Create A2A server instances from specialized agents
+            coding_server = A2AServerInstance(
+                port=vibe_coding.port,
+                agent_name=vibe_coding.agent_name,
+                agent_description=vibe_coding.agent_description,
+                tools=vibe_coding.get_tools(),
+                wallet_address=vibe_coding.wallet_address,
+                agent_instance=vibe_coding
+            )
+            
+            market_server = A2AServerInstance(
+                port=crypto_market.port,
+                agent_name=crypto_market.agent_name,
+                agent_description=crypto_market.agent_description,
+                tools=crypto_market.get_tools(),
+                wallet_address=crypto_market.wallet_address,
+                agent_instance=crypto_market
+            )
+            
+            audit_server = A2AServerInstance(
+                port=contract_audit.port,
+                agent_name=contract_audit.agent_name,
+                agent_description=contract_audit.agent_description,
+                tools=contract_audit.get_tools(),
+                wallet_address=contract_audit.wallet_address,
+                agent_instance=contract_audit
+            )
+            
+            self.servers = [coding_server, market_server, audit_server]
+            logger.info("Successfully initialized specialized A2A agents")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize specialized agents: {e}")
+            # Fallback to placeholder servers if specialized agents fail
+            self._setup_placeholder_servers()
+    
+    def _setup_placeholder_servers(self):
+        """Fallback method to set up placeholder servers"""
+        def echo_tool(message: str) -> str:
+            """Echo the input message"""
+            return f"Echo: {message}"
+        
+        def time_tool() -> str:
+            """Get current time"""
+            import datetime
+            return f"Current time: {datetime.datetime.now().isoformat()}"
+        
+        def info_tool() -> str:
+            """Get server information"""
+            return "This is a placeholder A2A server for KiloMarket"
+        
+        placeholder_tools = [echo_tool, time_tool, info_tool]
+        
+        # Server 1: Vibe Coding (port 9000) - placeholder
+        coding_server = A2AServerInstance(
             port=9000,
-            agent_name="Calculator Agent",
-            agent_description="A calculator agent that can perform basic arithmetic operations.",
-            tools=[calculator]
+            agent_name="Vibe Coding Agent",
+            agent_description="A premium coding service agent. (Currently running in placeholder mode)",
+            tools=placeholder_tools
         )
         
-        # Server 2: Echo/Utility (port 9001)
-        utility_server = A2AServerInstance(
+        # Server 2: Crypto Market (port 9001) - placeholder
+        market_server = A2AServerInstance(
             port=9001,
-            agent_name="Utility Agent",
-            agent_description="A utility agent that provides echo, time, and information services.",
-            tools=create_placeholder_tools()
+            agent_name="Crypto Market Agent",
+            agent_description="Real-time cryptocurrency market data provider. (Currently running in placeholder mode)",
+            tools=placeholder_tools
         )
         
-        # Server 3: Info/Help (port 9002)
-        info_server = A2AServerInstance(
+        # Server 3: Contract Audit (port 9002) - placeholder
+        audit_server = A2AServerInstance(
             port=9002,
-            agent_name="Info Agent",
-            agent_description="An information agent that provides help and general information.",
-            tools=create_placeholder_tools()
+            agent_name="Smart Contract Audit Agent",
+            agent_description="Professional smart contract security audit agent. (Currently running in placeholder mode)",
+            tools=placeholder_tools
         )
         
-        self.servers = [calc_server, utility_server, info_server]
+        self.servers = [coding_server, market_server, audit_server]
+        logger.info("Using placeholder A2A servers (specialized agents unavailable)")
     
     def start_all_servers(self) -> tuple[bool, str]:
         """Start all A2A servers"""

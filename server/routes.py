@@ -17,6 +17,7 @@ from .templates import (
 from .templates.ai_provider import ai_provider_template
 from .templates.wallet_settings import wallet_settings_template
 from .templates.interactive import interactive_mode_template, new_session_template, chat_session_template
+from .templates.markets import markets_page_template
 from .a2a_server import get_a2a_manager
 from .ai_provider import ai_provider_manager
 from .wallet_settings import wallet_settings_manager
@@ -472,6 +473,85 @@ def setup_routes(app):
 </body>
 </html>
             """)
+    
+    # Markets Routes
+    @app.get("/markets")
+    async def markets_page():
+        """Agent marketplace page"""
+        return HTMLResponse(markets_page_template())
+    
+    @app.get("/api/agents")
+    async def get_agents():
+        """Get all available agents and their capabilities"""
+        try:
+            from agents import AgentRegistry
+            agent_registry = AgentRegistry()
+            agents_summary = agent_registry.get_agents_summary()
+            return JSONResponse(agents_summary)
+        except Exception as e:
+            logger.error(f"Error getting agents: {e}")
+            # Return fallback data
+            return JSONResponse({
+                "total_agents": 3,
+                "agents": [
+                    {
+                        "name": "Vibe Coding Agent",
+                        "port": 9000,
+                        "description": "Premium coding service agent",
+                        "services": ["Code Generation", "Code Analysis", "Debugging"],
+                        "business_model": {"type": "Pay-per-request"},
+                        "features": ["High-quality code", "Security analysis"]
+                    },
+                    {
+                        "name": "Crypto Market Agent",
+                        "port": 9001,
+                        "description": "Real-time market data provider",
+                        "services": ["Token Prices", "Market Analysis", "Top Movers"],
+                        "business_model": {"type": "Data-as-a-Service"},
+                        "features": ["Real-time data", "Comprehensive coverage"]
+                    },
+                    {
+                        "name": "Smart Contract Audit Agent",
+                        "port": 9002,
+                        "description": "Security audit and vulnerability scanning",
+                        "services": ["Security Audits", "Vulnerability Scanning", "Risk Assessment"],
+                        "business_model": {"type": "Security-as-a-Service"},
+                        "features": ["Comprehensive analysis", "Detailed reports"]
+                    }
+                ]
+            })
+    
+    @app.get("/api/agent/{port}")
+    async def get_agent_by_port(port: int):
+        """Get specific agent information by port"""
+        try:
+            from agents import AgentRegistry
+            agent_registry = AgentRegistry()
+            agent = agent_registry.get_agent_by_port(port)
+            
+            if agent:
+                return JSONResponse(agent.get_agent_info())
+            else:
+                return JSONResponse({"error": "Agent not found"})
+        except Exception as e:
+            logger.error(f"Error getting agent {port}: {e}")
+            return JSONResponse({"error": str(e)})
+    
+    @app.get("/api/agent/{port}/capabilities")
+    async def get_agent_capabilities(port: int):
+        """Get specific agent capabilities by port"""
+        try:
+            from agents import AgentRegistry
+            agent_registry = AgentRegistry()
+            agent = agent_registry.get_agent_by_port(port)
+            
+            if agent:
+                return JSONResponse(agent.get_capabilities())
+            else:
+                return JSONResponse({"error": "Agent not found"})
+        except Exception as e:
+            logger.error(f"Error getting agent capabilities {port}: {e}")
+            return JSONResponse({"error": str(e)})
     
     # Session API Endpoints
     @app.get("/api/sessions")
