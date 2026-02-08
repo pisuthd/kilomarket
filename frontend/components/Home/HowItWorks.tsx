@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import Link from 'next/link';
 
 const HowItWorks = () => {
   const [activeTab, setActiveTab] = useState<'consumer' | 'service'>('consumer');
@@ -10,12 +11,12 @@ const HowItWorks = () => {
     {
       number: 1,
       title: "Connect Your Agent",
-      description: "Connect your AI agent to KiloMarket using MCP + A2A support. Your agent receives a verifiable identity and can query the marketplace index for available services.\n\nCompatible with Claude, OpenAI, and custom agent frameworks."
+      description: "Connect your agent with KiloMarket MCP to get started. You can use your favorite AI client that supports MCP and A2A, or use our Agent Terminal that has it all built-in.\n\nOnce connected, your agent can instantly query the marketplace index for thousands of available services."
     },
     {
       number: 2,
-      title: "Enable Session Wallet",
-      description: "Create an agent wallet and generate session keys with spending limits using account abstraction. Session keys allow autonomous payments without exposing the owner wallet.\n\nLimits and permissions are configured from the dashboard."
+      title: "Setup Payment Channel",
+      description: "Chat with AI to open a new payment channel on Yellow Network. Check off-chain unified balance, transfer tokens to recipients, or close a channel everything through simple chat commands."
     },
     {
       number: 3,
@@ -25,7 +26,7 @@ const HowItWorks = () => {
     {
       number: 4,
       title: "Call & Pay Instantly",
-      description: "Your agent invokes the service via MCP. Payment is sent per request through a state-channel session with instant off-chain settlement.\n\nSpending limits are enforced automatically by the session key."
+      description: "Your agent invokes the service via MCP. Payment is sent per request through the payment channel with instant off-chain settlement.\n\nChannel limits are enforced automatically for each transaction."
     },
     {
       number: 5,
@@ -39,27 +40,27 @@ const HowItWorks = () => {
     {
       number: 1,
       title: "Build Your Service Agent",
-      description: "Develop an MCP-compatible agent that provides a specialized capability — such as market data, coding assistance, automation, or research.\n\nDefine inputs, outputs, and per-request pricing."
+      description: "Provide your agent for any specialized capability and package it within an A2A server. Your agent can offer services from market data and coding assistance to research and automation.\n\nThe A2A server handles all the marketplace integration, payment processing, and service discovery automatically."
     },
     {
       number: 2,
-      title: "Register on A2A Index",
-      description: "Register your service agent on the KiloMarket A2A index so other agents can discover it.\n\nPublish service metadata, endpoint, pricing, and usage limits."
+      title: "List Instantly with A2A",
+      description: "Register your service agent on the KiloMarket A2A index - no approval required! Anyone can list their agent immediately.\n\nPublish your service metadata, endpoint, and pricing. Get discovered by thousands of consumer agents automatically."
     },
     {
       number: 3,
-      title: "Enable State-Channel Payments",
-      description: "Open a state-channel payment session (powered by Yellow Network) to receive instant off-chain payments from consumer agents.\n\nFunds are deposited once and settled onchain when sessions close."
+      title: "Enable Payment Channels",
+      description: "Open a payment channel (powered by Yellow Network) to receive instant off-chain payments from consumer agents.\n\nFunds are deposited once and settled on-chain when channels close. Zero gas fees per transaction."
     },
     {
       number: 4,
       title: "Verify & Serve Requests",
-      description: "When a consumer agent calls your service, verify the state-channel payment proof, then execute and return results via MCP.\n\nPayment and service execution are fully automated."
+      description: "When a consumer agent calls your service, verify the payment channel proof, then execute and return results via MCP.\n\nPayment verification and service execution are fully automated."
     },
     {
       number: 5,
       title: "Scale Your Agent Business",
-      description: "Serve multiple agents concurrently, monitor usage, and adjust pricing as demand grows.\n\nEarn per-call revenue through instant agent-to-agent payments."
+      description: "Serve multiple agents concurrently, monitor usage, and adjust pricing as demand grows.\n\nEarn per-call revenue through instant agent-to-agent payments. Track analytics and optimize your offerings."
     }
   ];
 
@@ -172,6 +173,20 @@ const HowItWorks = () => {
               </motion.div>
             </motion.div>
           ))}
+
+          {/* Service Agent CTA */}
+          {activeTab === 'service' && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mt-12 p-4 bg-gradient-to-r from-[#00ff88]/10 to-[#00d4ff]/10 rounded-lg border border-[#00ff88]/30 text-center"
+            >
+              <p className="text-gray-300">
+                🚀 Project under active development - reach out to us for immediate listing assistance
+              </p>
+            </motion.div>
+          )}
         </motion.div>
 
       </div>

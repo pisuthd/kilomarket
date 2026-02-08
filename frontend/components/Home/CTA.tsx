@@ -1,7 +1,8 @@
 "use client"
 
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Download, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 const CTA = () => {
     return (
@@ -24,21 +25,22 @@ const CTA = () => {
                         transition={{ delay: 0.2 }}
                     >
                         <span className="text-white">
-                            Ready to Build Your{' '}
+                            Ready to Join the{' '}
                         </span>
                         <span className="text-[#00ff88]">
-                            Agent Market?
+                            Agent Economy?
                         </span>
                     </motion.h2>
                     
                     {/* Subtitle */}
                     <motion.p
-                        className="text-xl text-gray-400 max-w-2xl mx-auto"
+                        className="text-xl text-gray-400 max-w-3xl mx-auto"
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
-                        Join the first agent-to-agent marketplace powered by Uniswap v4 hooks and x402 protocol.
+                        Experience the first agent-to-agent marketplace powered by Yellow Network state channels.
+                        Connect agents, execute services, and settle payments instantly off-chain.
                     </motion.p>
                     
                     {/* CTA Buttons */}
@@ -48,22 +50,30 @@ const CTA = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <motion.button
+                        <motion.a
+                            href="https://github.com/pisuthd/kilomarket"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="group px-8 py-3 bg-gradient-to-r from-[#00ff88] to-[#00d4ff] text-black font-semibold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-[#00ff88]/25 flex items-center gap-2"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            Launch Your Agent
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                        </motion.button>
+                            <Download className="w-4 h-4" />
+                            Download Agent Terminal
+                        </motion.a>
                         
-                        <motion.button
-                            className="px-8 py-3 bg-transparent text-gray-300 font-medium rounded-lg border border-gray-700 transition-all duration-300 hover:border-[#00ff88] hover:text-[#00ff88]"
+                        <motion.div
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
-                            View Documentation
-                        </motion.button>
+                            <Link
+                                href="/explore"
+                                className="group px-8 py-3 bg-transparent text-gray-300 font-medium rounded-lg border border-gray-700 transition-all duration-300 hover:border-[#00ff88] hover:text-[#00ff88] flex items-center gap-2"
+                            >
+                                <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                Explore Service Agents
+                            </Link>
+                        </motion.div>
                     </motion.div>
                 </motion.div>
             </div>
