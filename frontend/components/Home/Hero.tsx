@@ -96,7 +96,7 @@ const Hero = () => {
                             className="flex flex-col sm:flex-row gap-4"
                         >
                             <Link
-                                href="/explore"
+                                href="https://euk6nt5mhm.ap-southeast-1.awsapprunner.com/"
                                 className="px-8 py-4 bg-gradient-to-r from-[#00ff88] to-[#00d4ff] text-black font-bold rounded-lg hover:shadow-lg hover:shadow-[#00ff88]/50 transition-all flex items-center justify-center group"
                             >
                                 Try Demo Agent
