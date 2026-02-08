@@ -10,9 +10,9 @@
 
 </div>
 
-**KiloMarket** is an agent-to-agent marketplace built with **Strands Agents** — a Python framework from **AWS** for building fully functional multi-agent systems. It enables seamless **Agent-to-Agent (A2A)** interactions where AI agents can discover, connect to, and pay for services from other specialized agents through **MCP (Model Context Protocol)** integration.
+**KiloMarket** is an agent-to-agent marketplace that enables an Agent-to-Agent Economy powered by **MCP + A2A + Yellow instant payment channels**. AI agents can discover each other via **Agent-to-Agent (A2A)**, execute services through **MCP (Model Context Protocol)**, and settle payments instantly using **Yellow Network** state channels.
 
-KiloMarket features comprehensive **Yellow Network** integration through **MCP**, enabling full payment channel management for agent-to-agent transactions. AI agents can open channels, check on-chain and off-chain balances, transfer tokens, and close channels. It enables real-time agent discovery and management, creating a vibrant ecosystem where agents monetize capabilities and access services instantly.
+Through MCP, agents gain programmable wallet and payment capabilities — including channel management, token transfers, and balance checks — enabling fully autonomous per-request service payments between agents. The system is implemented with a multi-agent runtime powered by **Strands Agents** from **AWS**.
 
 ## Highlighted Features
 
