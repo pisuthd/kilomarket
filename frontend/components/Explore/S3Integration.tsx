@@ -19,38 +19,49 @@ interface Message {
 export class S3MessageFetcher {
   private static readonly BASE_URL = 'https://kilomarket-agent-sessions.s3.us-east-1.amazonaws.com';
   private static cache = new Map<string, Message[]>();
+  private static agentMessageCounts = new Map<string, number>();
 
   /**
    * Fetch conversation messages for an agent from S3
-   * URL pattern: /agents/{agent_id}/session_kilomarket-{agent_id}/agents/agent_{agent_id}/messages/message_{index}.json
+   * Always starts from message_0 and fetches sequentially until 404
    */
   static async fetchAgentMessages(agentId: string, startIndex: number = 0): Promise<Message[]> {
-    const cacheKey = `${agentId}-${startIndex}`;
+    const cacheKey = `${agentId}`;
     
-    // Check cache first
+    // Check if we already have all messages cached
     if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)!;
+      const allMessages = this.cache.get(cacheKey)!;
+      return startIndex === 0 ? allMessages : allMessages.slice(startIndex);
+    }
+
+    // If starting from index > 0 and we don't have cache, we need to fetch from beginning
+    if (startIndex > 0) {
+      await this.fetchAgentMessages(agentId, 0); // Fetch all messages first
+      const allMessages = this.cache.get(cacheKey)!;
+      return allMessages.slice(startIndex);
     }
 
     const messages: Message[] = [];
-    let messageIndex = startIndex;
-    let hasMoreMessages = true;
+    let messageIndex = 0;
+    let consecutiveErrors = 0;
+    const MAX_CONSECUTIVE_ERRORS = 3;
 
     try {
-      while (hasMoreMessages && messageIndex < 100) { // Safety limit of 100 messages
+      while (consecutiveErrors < MAX_CONSECUTIVE_ERRORS && messageIndex < 200) { // Safety limit of 200 messages
         const messageUrl = `${this.BASE_URL}/agents/${agentId}/session_kilomarket-${agentId}/agents/agent_${agentId}/messages/message_${messageIndex}.json`;
         
         try {
           const response = await fetch(messageUrl);
           
-          if (response.status === 404) {
-            // No more messages available
-            hasMoreMessages = false;
+          if (response.status === 404 || response.status === 403) {
+            // No more messages available or access denied
+            console.log(`No more messages found at index ${messageIndex} (${response.status})`);
             break;
           }
           
           if (!response.ok) {
-            console.warn(`Failed to fetch message ${messageIndex}:`, response.statusText);
+            console.warn(`Failed to fetch message ${messageIndex}: ${response.status} ${response.statusText}`);
+            consecutiveErrors++;
             messageIndex++;
             continue;
           }
@@ -58,17 +69,31 @@ export class S3MessageFetcher {
           const message: Message = await response.json();
           messages.push(message);
           messageIndex++;
+          consecutiveErrors = 0; // Reset error counter on success
+          
+          // Add a small delay to avoid rate limiting
+          if (messageIndex % 10 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
           
         } catch (error) {
           console.warn(`Error fetching message ${messageIndex}:`, error);
+          consecutiveErrors++;
           messageIndex++;
-          // Continue trying next messages even if one fails
+          
+          // Wait a bit longer on errors
+          if (consecutiveErrors > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
         }
       }
       
-      // Cache the results
+      // Cache all results
       this.cache.set(cacheKey, messages);
-      return messages;
+      this.agentMessageCounts.set(agentId, messages.length);
+      
+      console.log(`Fetched ${messages.length} messages for agent ${agentId}`);
+      return startIndex === 0 ? messages : messages.slice(startIndex);
       
     } catch (error) {
       console.error('Error fetching agent messages:', error);
@@ -85,7 +110,7 @@ export class S3MessageFetcher {
     try {
       const response = await fetch(messageUrl);
       
-      if (response.status === 404) {
+      if (response.status === 404 || response.status === 403) {
         return null;
       }
       
@@ -105,8 +130,28 @@ export class S3MessageFetcher {
    * Check if an agent has any conversation history
    */
   static async checkAgentHasMessages(agentId: string): Promise<boolean> {
+    // Check cache first
+    const cacheKey = agentId;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!.length > 0;
+    }
+
     const firstMessage = await this.fetchSingleMessage(agentId, 0);
     return firstMessage !== null;
+  }
+
+  /**
+   * Get total message count for an agent
+   */
+  static async getAgentMessageCount(agentId: string): Promise<number> {
+    // Check cache first
+    if (this.agentMessageCounts.has(agentId)) {
+      return this.agentMessageCounts.get(agentId)!;
+    }
+
+    // Fetch all messages to get count
+    await this.fetchAgentMessages(agentId, 0);
+    return this.agentMessageCounts.get(agentId) || 0;
   }
 
   /**
@@ -115,14 +160,12 @@ export class S3MessageFetcher {
   static clearCache(agentId?: string) {
     if (agentId) {
       // Clear cache entries for specific agent
-      for (const key of this.cache.keys()) {
-        if (key.startsWith(`${agentId}-`)) {
-          this.cache.delete(key);
-        }
-      }
+      this.cache.delete(agentId);
+      this.agentMessageCounts.delete(agentId);
     } else {
       // Clear all cache
       this.cache.clear();
+      this.agentMessageCounts.clear();
     }
   }
 
@@ -130,13 +173,7 @@ export class S3MessageFetcher {
    * Get cached message count for an agent
    */
   static getCachedMessageCount(agentId: string): number {
-    let count = 0;
-    for (const [key, messages] of this.cache.entries()) {
-      if (key.startsWith(`${agentId}-`)) {
-        count = Math.max(count, messages.length);
-      }
-    }
-    return count;
+    return this.agentMessageCounts.get(agentId) || 0;
   }
 
   /**
