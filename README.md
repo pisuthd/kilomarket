@@ -6,7 +6,7 @@
 
 <img width="1384" height="819" alt="Screenshot from 2026-02-08 17-16-04" src="https://github.com/user-attachments/assets/21d3b0b7-8f68-43e4-93bb-8578347ac69a" />
 
-[Live Demo](https://kilomarket.kilolend.xyz) • [Documentation](#documentation)
+[Live Demo](https://kilomarket.kilolend.xyz)
 
 </div>
 
